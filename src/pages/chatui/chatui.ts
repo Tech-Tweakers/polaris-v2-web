@@ -1,117 +1,89 @@
-import { ref, onMounted } from 'vue';
+import { reactive } from 'vue';
 import axios from 'axios';
+import { iMensagem } from './interface';
 
-let r = (Math.random() + 1).toString(36).substring(7);
+export const state = reactive({
+    loading: false,
+    input: <string | null>null,
+    messages: <iMensagem[]>([]),
+    response: <any>null,
+    inputDisabled: false,
+    idChat: (Math.random() + 1).toString(36).substring(7)
+})
 
-interface Message {
-    id: number;
-    text: string;
-    sender: string;
-    timestamp: Date;
-}
+export const actions = {
 
-const input = ref<string>('');
-const messages = ref<Message[]>([]);
-const inputDisabled = ref(false);
-const loading = ref(false);
+    async enviarMsg() {
+        if (state.input.trim() !== '') {
+            state.inputDisabled = true;
+            const newMessage: iMensagem = {
+                id: state.messages.length + 1,
+                text: state.input,
+                sender: 'user',
+                timestamp: new Date(),
+            };
 
-const LOCAL_STORAGE_KEY = 'chatMessages';
+            try {
+                state.loading = true;
 
-const saveMessagesToLocalStorage = () => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(messages.value));
-};
-
-const loadMessagesFromLocalStorage = () => {
-    const storedMessages = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedMessages) {
-        messages.value = JSON.parse(storedMessages);
-    }
-};
-
-const handleSend = async () => {
-    if (input.value.trim() !== '') {
-        inputDisabled.value = true;
-        const newMessage: Message = {
-            id: messages.value.length + 1,
-            text: input.value,
-            sender: 'user',
-            timestamp: new Date(),
-        };
-
-        try {
-            loading.value = true;
-
-            const response = await axios.post(
-                'https://sure-cheaply-kite.ngrok-free.app/entries/',
-                [
+                state.response = await axios.post(
+                    'http://localhost:9001/chat/send',
+                    [
+                        {
+                            role: 'user:',
+                            content: state.input,
+                            chatID: state.idChat,
+                        },
+                    ],
                     {
-                        role: 'user:',
-                        content: input.value,
-                        chatID: r,
-                    },
-                ],
-                {
-                    headers: {
-                        'content-type': 'application/json',
-                        'Access-Control-Allow-Credentials': 'true',
-                        'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Headers': '*',
-                    },
-                }
-            );
+                        headers: {
+                            'content-type': 'application/json',
+                            'Access-Control-Allow-Credentials': 'true',
+                            'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+                            'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Headers': '*',
+                        },
+                    }
+                );
 
-            const botResponse = response.data.content;
-            messages.value.push(newMessage, {
-                id: messages.value.length + 2,
-                text: botResponse,
+                const botResponse = state.response.data.content;
+                state.messages.push(newMessage, {
+                    id: state.messages.length + 2,
+                    text: botResponse,
+                    sender: 'bot',
+                    timestamp: new Date(),
+                });
+
+                console.log(botResponse);
+
+
+                state.input = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                state.messages.push({
+                    id: state.messages.length + 1,
+                    text: `Error: Could not connect to the backend: ${error}`,
+                    sender: 'bot',
+                    timestamp: new Date(),
+                });
+            } finally {
+                state.inputDisabled = false;
+                state.loading = false;
+            }
+        }
+    },
+
+    setup() {
+        if (state.messages.length === 0) {
+            state.messages.push({
+                id: 1,
+                text: 'Hello! How can I help you? 😊',
                 sender: 'bot',
                 timestamp: new Date(),
             });
-
-            console.log(botResponse);
-
-            input.value = '';
-            saveMessagesToLocalStorage(); // Salva as mensagens no localStorage após o envio bem-sucedido
-        } catch (error) {
-            console.error('Error sending message:', error);
-            messages.value.push({
-                id: messages.value.length + 1,
-                text: `Error: Could not connect to the backend: ${error}`,
-                sender: 'bot',
-                timestamp: new Date(),
-            });
-        } finally {
-            loading.value = false;
-            inputDisabled.value = false;
         }
     }
-};
 
-// onMounted(() => {
-//     loadMessagesFromLocalStorage();
-//     // Exemplo: Carregar mensagens iniciais se o localStorage estiver vazio
-//     if (messages.value.length === 0) {
-//         messages.value.push({
-//             id: 1,
-//             text: 'Hello! How can I help you? 😊',
-//             sender: 'bot',
-//             timestamp: new Date(),
-//         });
-//     }
-// });
+}
 
-const setup = () => {
-    loadMessagesFromLocalStorage();
-    if (messages.value.length === 0) {
-        messages.value.push({
-            id: 1,
-            text: 'Hello! How can I help you? 😊',
-            sender: 'bot',
-            timestamp: new Date(),
-        });
-    }
-};
-
-
-export { messages, input, inputDisabled, loading, handleSend, setup };
+export default { state, actions };

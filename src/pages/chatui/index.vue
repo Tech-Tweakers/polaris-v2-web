@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import globalActions from "../../store/globalActions";
-import { handleSend, input, messages, setup } from "./chatui";
-setup();
+import { actions, state } from "./chatui";
+
+actions.setup();
 const isDrawerOpen = ref(false);
 </script>
 
@@ -16,7 +17,6 @@ const isDrawerOpen = ref(false);
   ></v-btn>
 
   <div class="header">
-    <!--Content before waves-->
     <div :class="{ barraTopOpen: isDrawerOpen, barraTopClosed: !isDrawerOpen }">
       <div class="barraTop">
         <v-navigation-drawer v-model="isDrawerOpen" flat class="barraLateral">
@@ -94,7 +94,7 @@ const isDrawerOpen = ref(false);
     >
       <div class="chat-container">
         <div
-          v-for="message in messages"
+          v-for="message in state.messages"
           :key="message.id"
           class="message"
           :class="{
@@ -102,6 +102,9 @@ const isDrawerOpen = ref(false);
             'bot-message': message.sender === 'bot',
           }"
         >
+          <v-avatar size="30px" color="primary" class="img__avatar">
+            <!-- <v-img :src="" aspect-ratio="1" cover> </v-img> -->
+          </v-avatar>
           {{ message.text }}
         </div>
       </div>
@@ -138,30 +141,42 @@ const isDrawerOpen = ref(false);
         variant="filled"
         label="Type a message"
         auto-grow
-        v-model="input"
+        v-model="state.input"
+        @keydown.enter.prevent="actions.enviarMsg"
       >
         <template #append>
-          <v-btn @click="handleSend" class="mr-2" color="primary">
+          <v-btn @click="actions.enviarMsg" class="mr-2" color="primary">
             <v-icon>mdi-send</v-icon>
           </v-btn>
         </template>
       </v-textarea>
     </div>
-
-    <!--Waves end-->
   </div>
-  <!--Header ends-->
 
-  <!--Content starts-->
   <div class="content flex">
     <div class="copyright"><p>©Polaris 2023</p></div>
     <div class="copyright"><p class="ml-4">Versão: 2.0</p></div>
   </div>
 
-  <!--Content ends-->
+  <v-overlay
+    :model-value="state.loading"
+    class="align-center justify-center"
+    persistent
+  >
+    <v-progress-circular
+      color="primary"
+      indeterminate
+      size="64"
+    ></v-progress-circular>
+  </v-overlay>
 </template>
 
 <style lang="scss" scoped>
+.img__avatar {
+  margin-right: 3px;
+  margin-top: 3px;
+  margin-bottom: 2px;
+}
 .barraTop {
   height: 120px;
   transition: height 0.3s ease-in-out;
@@ -253,6 +268,7 @@ const isDrawerOpen = ref(false);
 }
 
 .message {
+  font-size: 15px;
   padding: 8px;
   margin-bottom: 8px;
   max-width: 70%;
@@ -260,32 +276,28 @@ const isDrawerOpen = ref(false);
 }
 
 .user-message {
-  text-align: right;
-  background-color: #576e6888;
+  font-size: 17px;
+  text-align: left;
   color: white;
   border-radius: 8px 8px 0 8px;
 }
 
 .bot-message {
+  font-size: 17px;
   text-align: left;
-  background-color: #233a4d;
+  height: auto;
   color: white;
   border-radius: 8px 8px 8px 0;
 }
 .inputMessage {
   height: 100px;
+  width: auto;
 }
 .btnDark {
   position: fixed;
   top: 8px;
   left: 45px;
   z-index: 1005;
-}
-
-.folha {
-  // color: "red";
-  fill: green;
-  // fill: rgba(63, 76, 119, 0.8);
 }
 
 .ct {
@@ -296,12 +308,6 @@ const isDrawerOpen = ref(false);
   align-items: center;
 }
 
-.login {
-  display: flex;
-  // width: 380px;
-  // min-width: 300px;
-}
-
 p {
   letter-spacing: 1px;
   font-size: 14px;
@@ -309,13 +315,12 @@ p {
 }
 
 .header {
-  margin-top: -30px;
   position: relative;
   text-align: center;
   background: linear-gradient(
     60deg,
-    rgba(84, 58, 183, 1) 0%,
-    rgba(0, 172, 193, 1) 100%
+    rgb(130, 105, 233) 0%,
+    rgb(90, 236, 255) 100%
   );
   color: white;
 }
