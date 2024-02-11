@@ -3,7 +3,7 @@ import { ref } from "vue";
 import globalActions from "../../store/globalActions";
 import { actions, state } from "./chatui";
 
-actions.setup();
+// actions.setup();
 const isDrawerOpen = ref(false);
 </script>
 
@@ -93,6 +93,7 @@ const isDrawerOpen = ref(false);
       }"
     >
       <div class="chat-container">
+        <div class="messageInicial">Olá! Como posso ajudá-lo? 😊</div>
         <div
           v-for="message in state.messages"
           :key="message.id"
@@ -102,8 +103,16 @@ const isDrawerOpen = ref(false);
             'bot-message': message.sender === 'bot',
           }"
         >
-          <v-avatar size="30px" color="primary" class="img__avatar">
-            <!-- <v-img :src="" aspect-ratio="1" cover> </v-img> -->
+          <v-avatar size="35px" color="primary" class="img__avatar">
+            <v-img
+              :src="
+                message.sender === 'user'
+                  ? state.userAvatarSrc
+                  : state.botAvatarSrc
+              "
+              alt="logo"
+              style="margin-left: 0px; margin-top: -0.5px"
+            />
           </v-avatar>
           {{ message.text }}
         </div>
@@ -174,11 +183,11 @@ const isDrawerOpen = ref(false);
 <style lang="scss" scoped>
 .img__avatar {
   margin-right: 3px;
-  margin-top: 3px;
+  margin-top: 10px;
   margin-bottom: 2px;
 }
 .barraTop {
-  height: 120px;
+  height: 90px;
   transition: height 0.3s ease-in-out;
 }
 
@@ -188,7 +197,7 @@ const isDrawerOpen = ref(false);
 }
 
 .barraTopClosed {
-  height: 120px;
+  height: 70px;
 }
 
 .chat-container-open {
@@ -199,6 +208,14 @@ const isDrawerOpen = ref(false);
   margin-left: 165px;
   margin-top: 30px;
   width: 100%;
+}
+
+.messageInicial {
+  font-size: 17px;
+  max-width: 70%;
+  padding-right: 110px;
+  word-wrap: break-word;
+  padding-top: 40px;
 }
 
 @media only screen and (max-width: 600px) {
@@ -259,11 +276,10 @@ const isDrawerOpen = ref(false);
 .chat-container {
   max-height: 450px;
   overflow-y: auto;
-  padding: 16px;
+  padding-top: 16px;
   height: 150vh;
   width: 100%;
   margin: 0;
-  padding: 0;
   transition: margin-left 0.3s ease-in-out;
 }
 
@@ -273,6 +289,93 @@ const isDrawerOpen = ref(false);
   margin-bottom: 8px;
   max-width: 70%;
   word-wrap: break-word;
+}
+
+.user-message {
+  font-size: 17px;
+  text-align: left;
+  color: white;
+  border-radius: 8px 8px 0 8px;
+}
+
+.bot-message {
+  font-size: 17px;
+  text-align: left;
+  height: auto;
+  color: white;
+  border-radius: 8px 8px 8px 0;
+}
+.inputMessage {
+  height: 100px;
+  width: auto;
+}
+.btnDark {
+  position: fixed;
+  top: 8px;
+  left: 45px;
+  z-index: 1005;
+}
+
+.ct {
+  height: 100vh;
+  // background: radial-gradient(#653d84, #332042);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+p {
+  letter-spacing: 1px;
+  font-size: 14px;
+  // color: #333333;
+}
+
+.header {
+  padding-top: 15px;
+  position: relative;
+  text-align: center;
+  background: linear-gradient(
+    60deg,
+    rgb(130, 105, 233) 0%,
+    rgb(90, 236, 255) 100%
+  );
+  color: white;
+}
+
+.dark .header {
+  background: linear-gradient(
+    112.1deg,
+    rgb(32, 38, 57) 11.4%,
+    rgb(63, 76, 119) 70.2%
+  );
+}
+
+.barra {
+  width: 155px;
+  height: 60px;
+  background-color: #ffffff00;
+}
+
+.copyright {
+  margin-bottom: 10px;
+}
+.chat-container {
+  max-height: 450px;
+  align-items: center;
+  overflow-y: auto;
+  padding: 16px;
+  height: 150vh;
+  width: 100%;
+  padding-left: 150px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.message {
+  padding-right: 100px;
+  font-size: 17px;
+  max-width: 70%;
+  align-items: center;
+  justify-items: center;
 }
 
 .user-message {
@@ -335,6 +438,7 @@ p {
 
 .logo {
   width: 50px;
+  size: 20px;
   fill: white;
   padding-right: 15px;
   display: inline-block;

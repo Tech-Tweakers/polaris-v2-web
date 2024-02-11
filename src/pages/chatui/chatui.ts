@@ -8,8 +8,11 @@ export const state = reactive({
     messages: <iMensagem[]>([]),
     response: <any>null,
     inputDisabled: false,
-    idChat: (Math.random() + 1).toString(36).substring(7)
+    idChat: (Math.random() + 1).toString(36).substring(7),
+    userAvatarSrc: 'src/assets/user.png',
+    botAvatarSrc: 'src/assets/bot.png',
 })
+
 
 export const actions = {
 
@@ -47,6 +50,7 @@ export const actions = {
                 );
 
                 const botResponse = state.response.data.content;
+
                 state.messages.push(newMessage, {
                     id: state.messages.length + 2,
                     text: botResponse,
@@ -73,16 +77,16 @@ export const actions = {
         }
     },
 
-    setup() {
-        if (state.messages.length === 0) {
-            state.messages.push({
-                id: 1,
-                text: 'Hello! How can I help you? 😊',
-                sender: 'bot',
-                timestamp: new Date(),
-            });
-        }
-    }
+    // setup() {
+    //     if (state.messages.length === 0) {
+    //         state.messages.push({
+    //             id: 1,
+    //             text: 'Olá! Como posso ajudá-lo? 😊',
+    //             sender: 'bot',
+    //             timestamp: new Date(),
+    //         });
+    //     }
+    // }
 
 }
 
