@@ -8,163 +8,171 @@ const isDrawerOpen = ref(false);
 </script>
 
 <template>
-  <v-btn
-    @click="globalActions.toggleTheme()"
-    variant="text"
-    class="btnDark"
-    color="white"
-    icon="mdi-theme-light-dark"
-  ></v-btn>
+  <div class="template">
+    <v-btn
+      @click="globalActions.toggleTheme()"
+      variant="text"
+      class="btnDark"
+      color="white"
+      icon="mdi-theme-light-dark"
+    ></v-btn>
 
-  <div class="header">
-    <div :class="{ barraTopOpen: isDrawerOpen, barraTopClosed: !isDrawerOpen }">
-      <div class="barraTop">
-        <v-navigation-drawer v-model="isDrawerOpen" flat class="barraLateral">
-          <v-list>
-            <v-list-subheader>Menu</v-list-subheader>
-            <v-list-item prepend-icon="mdi-home">Home</v-list-item>
-            <v-list-item prepend-icon="mdi-account">Usuários</v-list-item>
+    <div class="header">
+      <div
+        :class="{ barraTopOpen: isDrawerOpen, barraTopClosed: !isDrawerOpen }"
+      >
+        <div class="barraTop">
+          <v-navigation-drawer v-model="isDrawerOpen" flat class="barraLateral">
+            <v-list>
+              <v-list-subheader>Menu</v-list-subheader>
+              <v-list-item prepend-icon="mdi-home">Home</v-list-item>
+              <v-list-item prepend-icon="mdi-account">Usuários</v-list-item>
 
-            <v-list-group value="Clientes">
-              <template #activator="{ props }">
-                <v-list-item v-bind="props" prepend-icon="mdi-account-circle"
-                  >Clientes</v-list-item
+              <v-list-group value="Clientes">
+                <template #activator="{ props }">
+                  <v-list-item v-bind="props" prepend-icon="mdi-account-circle"
+                    >Clientes</v-list-item
+                  >
+                </template>
+
+                <v-list-item prepend-icon="mdi-currency-usd"
+                  >Vendas</v-list-item
                 >
-              </template>
+                <v-list-item prepend-icon="mdi-chart-line"
+                  >Relatório</v-list-item
+                >
+              </v-list-group>
+            </v-list>
+          </v-navigation-drawer>
+          <v-app-bar class="barra">
+            <v-app-bar-nav-icon
+              @click="isDrawerOpen = !isDrawerOpen"
+            ></v-app-bar-nav-icon>
+            <v-app-bar-title
+              >Polaris AI
+              <v-icon
+                ><img
+                  class="logo"
+                  src="../../../public/icons/icon.png"
+                  alt="logo"
+                  style="margin-left: 50px; margin-top: -0.5px"
+              /></v-icon>
+            </v-app-bar-title>
 
-              <v-list-item prepend-icon="mdi-currency-usd">Vendas</v-list-item>
-              <v-list-item prepend-icon="mdi-chart-line">Relatório</v-list-item>
-            </v-list-group>
-          </v-list>
-        </v-navigation-drawer>
-        <v-app-bar class="barra">
-          <v-app-bar-nav-icon
-            @click="isDrawerOpen = !isDrawerOpen"
-          ></v-app-bar-nav-icon>
-          <v-app-bar-title
-            >Polaris AI
-            <v-icon
-              ><img
-                class="logo"
-                src="../../../public/icons/icon.png"
-                alt="logo"
-                style="margin-left: 50px; margin-top: -0.5px"
-            /></v-icon>
-          </v-app-bar-title>
+            <template #append>
+              <v-btn icon class="mr-2">
+                <v-badge dot color="info">
+                  <v-icon icon="mdi-bell-outline"></v-icon>
+                </v-badge>
+              </v-btn>
 
-          <template #append>
-            <v-btn icon class="mr-2">
-              <v-badge dot color="info">
-                <v-icon icon="mdi-bell-outline"></v-icon>
-              </v-badge>
-            </v-btn>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-avatar v-bind="props">
+                    <v-img
+                      cover
+                      src="https://thumbs.dreamstime.com/z/nerd-portrait-young-cheerful-businessman-smiling-36201399.jpg"
+                    ></v-img>
+                  </v-avatar>
+                </template>
 
-            <v-menu>
-              <template #activator="{ props }">
-                <v-avatar v-bind="props">
-                  <v-img
-                    cover
-                    src="https://thumbs.dreamstime.com/z/nerd-portrait-young-cheerful-businessman-smiling-36201399.jpg"
-                  ></v-img>
-                </v-avatar>
-              </template>
+                <v-card min-width="200px">
+                  <v-list :lines="false" density="compact" nav>
+                    <v-list-item prepend-icon="mdi-account-outline">
+                      <v-list-item-title>Meu perfil</v-list-item-title>
+                    </v-list-item>
 
-              <v-card min-width="200px">
-                <v-list :lines="false" density="compact" nav>
-                  <v-list-item prepend-icon="mdi-account-outline">
-                    <v-list-item-title>Meu perfil</v-list-item-title>
-                  </v-list-item>
-
-                  <v-list-item prepend-icon="mdi-heart-outline">
-                    <v-list-item-title>Favoritos</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-menu>
-          </template>
-        </v-app-bar>
-      </div>
-    </div>
-
-    <div
-      :class="{
-        'chat-container-open': isDrawerOpen,
-        'chat-container-closed': !isDrawerOpen,
-      }"
-    >
-      <div class="chat-container">
-        <div class="messageInicial">Olá! Como posso ajudá-lo? 😊</div>
-        <div
-          v-for="message in state.messages"
-          :key="message.id"
-          class="message"
-          :class="{
-            'user-message': message.sender === 'user',
-            'bot-message': message.sender === 'bot',
-          }"
-        >
-          <v-avatar size="35px" color="primary" class="img__avatar">
-            <v-img
-              :src="
-                message.sender === 'user'
-                  ? state.userAvatarSrc
-                  : state.botAvatarSrc
-              "
-              alt="logo"
-              style="margin-left: 0px; margin-top: -0.5px"
-            />
-          </v-avatar>
-          {{ message.text }}
+                    <v-list-item prepend-icon="mdi-heart-outline">
+                      <v-list-item-title>Favoritos</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </template>
+          </v-app-bar>
         </div>
       </div>
-    </div>
 
-    <div>
-      <svg
-        class="waves"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 24 150 28"
-        preserveAspectRatio="none"
-        shape-rendering="auto"
+      <div
+        :class="{
+          'chat-container-open': isDrawerOpen,
+          'chat-container-closed': !isDrawerOpen,
+        }"
       >
-        <defs>
-          <path
-            id="gentle-wave"
-            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-          />
-        </defs>
-        <g class="parallax">
-          <use xlink:href="#gentle-wave" x="48" y="0" />
-          <use xlink:href="#gentle-wave" x="48" y="3" />
-          <use xlink:href="#gentle-wave" x="48" y="5" />
-          <use xlink:href="#gentle-wave" x="48" y="7" />
-        </g>
-      </svg>
+        <div class="chat-container">
+          <div class="messageInicial">Olá! Como posso ajudá-lo? 😊</div>
+          <div
+            v-for="message in state.messages"
+            :key="message.id"
+            class="message"
+            :class="{
+              'user-message': message.sender === 'user',
+              'bot-message': message.sender === 'bot',
+            }"
+          >
+            <v-avatar size="35px" color="primary" class="img__avatar">
+              <v-img
+                :src="
+                  message.sender === 'user'
+                    ? state.userAvatarSrc
+                    : state.botAvatarSrc
+                "
+                alt="logo"
+                style="margin-left: 0px; margin-top: -0.5px"
+              />
+            </v-avatar>
+            {{ message.text }}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <svg
+          class="waves"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          viewBox="0 24 150 28"
+          preserveAspectRatio="none"
+          shape-rendering="auto"
+        >
+          <defs>
+            <path
+              id="gentle-wave"
+              d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
+            />
+          </defs>
+          <g class="parallax">
+            <use xlink:href="#gentle-wave" x="48" y="0" />
+            <use xlink:href="#gentle-wave" x="48" y="3" />
+            <use xlink:href="#gentle-wave" x="48" y="5" />
+            <use xlink:href="#gentle-wave" x="48" y="7" />
+          </g>
+        </svg>
+      </div>
+
+      <div>
+        <v-textarea
+          class="inputMessage"
+          name="input"
+          variant="filled"
+          label="Type a message"
+          auto-grow
+          v-model="state.input"
+          @keydown.enter.prevent="actions.enviarMsg"
+        >
+          <template #append>
+            <v-btn @click="actions.enviarMsg" class="mr-2" color="primary">
+              <v-icon>mdi-send</v-icon>
+            </v-btn>
+          </template>
+        </v-textarea>
+      </div>
     </div>
 
-    <div>
-      <v-textarea
-        class="inputMessage"
-        name="input"
-        variant="filled"
-        label="Type a message"
-        auto-grow
-        v-model="state.input"
-        @keydown.enter.prevent="actions.enviarMsg"
-      >
-        <template #append>
-          <v-btn @click="actions.enviarMsg" class="mr-2" color="primary">
-            <v-icon>mdi-send</v-icon>
-          </v-btn>
-        </template>
-      </v-textarea>
+    <div class="content flex">
+      <div class="copyright"><p>©Polaris 2023</p></div>
+      <div class="copyright"><p class="ml-4">Versão: 2.0</p></div>
     </div>
-  </div>
-
-  <div class="content flex">
-    <div class="copyright"><p>©Polaris 2023</p></div>
-    <div class="copyright"><p class="ml-4">Versão: 2.0</p></div>
   </div>
 
   <v-overlay
@@ -273,13 +281,15 @@ const isDrawerOpen = ref(false);
 .copyright {
   margin-bottom: 10px;
 }
+
 .chat-container {
-  max-height: 450px;
+  max-height: 390px;
+  align-items: center;
   overflow-y: auto;
-  padding-top: 16px;
+  padding: 16px;
   height: 150vh;
   width: 100%;
-  margin: 0;
+  padding-left: 150px;
   transition: margin-left 0.3s ease-in-out;
 }
 
@@ -359,16 +369,6 @@ p {
 .copyright {
   margin-bottom: 10px;
 }
-.chat-container {
-  max-height: 450px;
-  align-items: center;
-  overflow-y: auto;
-  padding: 16px;
-  height: 150vh;
-  width: 100%;
-  padding-left: 150px;
-  transition: margin-left 0.3s ease-in-out;
-}
 
 .message {
   padding-right: 100px;
@@ -445,13 +445,6 @@ p {
   vertical-align: middle;
 }
 
-.inner-header {
-  height: 25vh;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 .flex {
   /*Flexbox for containers*/
   display: flex;
@@ -473,7 +466,6 @@ p {
 
 .content {
   position: relative;
-  height: 10vh;
   text-align: center;
   background-color: white;
 }
