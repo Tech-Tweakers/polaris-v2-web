@@ -46,7 +46,7 @@ import globalActions from "@/store/globalActions";
 
   <!--Content starts-->
   <div class="content flex">
-    <p>©Polaris 2023</p>
+    <p>©Polaris 2025</p>
     <p class="ml-4">Versão: 2.0</p>
   </div>
   <!--Content ends-->

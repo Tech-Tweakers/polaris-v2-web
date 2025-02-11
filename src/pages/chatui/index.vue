@@ -152,7 +152,7 @@ const isDrawerOpen = ref(false);
 
     <!-- Rodapé -->
     <v-footer app>
-      <div class="copyright">©Polaris 2023</div>
+      <div class="copyright">©Polaris 2025</div>
       <div class="copyright ml-4">Versão: 2.0</div>
     </v-footer>
 
