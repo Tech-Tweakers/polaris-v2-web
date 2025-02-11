@@ -1,4 +1,4 @@
-### START PROJECT POLARIS FRONT END### 
+### START PROJECT POLARIS FRONT END
 
 npm install 
 npm run dev 
