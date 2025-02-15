@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, nextTick } from "vue"; // Removida a importação duplicada
 import globalActions from "../../store/globalActions";
 import { actions, state } from "./chatui";
 
+const chatContainer = ref<HTMLElement | null>(null);
 const isDrawerOpen = ref(false);
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    }
+  });
+};
+
+// Aguarda nova mensagem e rola para baixo se for do bot
+watch(
+  () => state.messages.length,
+  async () => {
+    await nextTick(); // Aguarda o Vue renderizar completamente antes de rolar
+    const lastMessage = state.messages[state.messages.length - 1];
+    if (lastMessage?.sender === "bot") {
+      scrollToBottom();
+    }
+  }
+);
 </script>
+
 
 <template>
   <v-app>
@@ -84,8 +106,7 @@ const isDrawerOpen = ref(false);
     <!-- Conteúdo principal -->
     <v-main class="main-content">
       <div class="header">
-        <div class="chat-container ml-8">
-          <div class="messageInicial">Olá! Como posso ajudá-lo? 😊</div>
+        <div class="chat-container ml-8" ref="chatContainer">
           <div
             v-for="message in state.messages"
             :key="message.id"
@@ -229,7 +250,8 @@ const isDrawerOpen = ref(false);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  font-size: 17px;
+  padding: 18px;
   margin-bottom: 8px;
   max-width: 70%;
   word-wrap: break-word;
