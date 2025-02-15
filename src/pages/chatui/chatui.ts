@@ -38,13 +38,13 @@ export const actions = {
                     'http://localhost:8000/inference/',
                     {
                         prompt: state.input,
-                        stop_words: ["Pergunta:"],
-                        temperature: 0.9,
+                        stop_words: ["Pergunta:", "User:"],
+                        temperature: 0.2,
                         top_p: 0.5,
                         top_k: 40,
                         frequency_penalty: 2.0,
-                        presence_penalty: 1.5,
-                        max_tokens: 512,
+                        presence_penalty: 2.4,
+                        max_tokens: 1024,
                     },
                     {
                         headers: { 'content-type': 'application/json' },
