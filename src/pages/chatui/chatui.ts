@@ -40,7 +40,7 @@ export const actions = {
                         prompt: state.input,
                         stop_words: ["Pergunta:", "User:"],
                         temperature: 0.2,
-                        top_p: 0.5,
+                        top_p: 0.2,
                         top_k: 40,
                         frequency_penalty: 2.0,
                         presence_penalty: 2.4,

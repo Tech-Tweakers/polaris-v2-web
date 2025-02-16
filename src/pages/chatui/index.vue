@@ -351,6 +351,8 @@ watch(
 
   .message {
     max-width: 90%;
+    white-space: pre-wrap; /* Permite que as quebras de linha sejam respeitadas */
+    word-break: break-word; /* Quebra palavras longas */
   }
 
   .waves {
