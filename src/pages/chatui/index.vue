@@ -4,7 +4,7 @@ import globalActions from "../../store/globalActions";
 import { actions, state } from "./chatui";
 
 const chatContainer = ref<HTMLElement | null>(null);
-const isDrawerOpen = ref(false);
+const isDrawerOpen = ref(true);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -27,31 +27,21 @@ watch(
 );
 </script>
 
-
 <template>
   <v-app>
     <!-- Barra lateral -->
     <v-navigation-drawer v-model="isDrawerOpen" app flat class="drawer">
       <v-list>
         <v-list-subheader>Menu</v-list-subheader>
-        <v-list-item prepend-icon="mdi-home" title="Home"></v-list-item>
-        <v-list-item prepend-icon="mdi-account" title="Usuários"></v-list-item>
-        <v-list-group value="Clientes">
+        <v-list-group value="Chats">
           <template #activator="{ props }">
             <v-list-item
               v-bind="props"
               prepend-icon="mdi-account-circle"
-              title="Clientes"
+              title="Chats"
             ></v-list-item>
           </template>
-          <v-list-item
-            prepend-icon="mdi-currency-usd"
-            title="Vendas"
-          ></v-list-item>
-          <v-list-item
-            prepend-icon="mdi-chart-line"
-            title="Relatório"
-          ></v-list-item>
+          <!-- Lista de chats -->
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
@@ -74,11 +64,6 @@ watch(
           color="auto"
           icon="mdi-theme-light-dark"
         ></v-btn>
-        <v-btn icon class="mr-2">
-          <v-badge dot color="info">
-            <v-icon>mdi-bell-outline</v-icon>
-          </v-badge>
-        </v-btn>
         <v-menu>
           <template #activator="{ props }">
             <v-avatar v-bind="props">
@@ -90,12 +75,12 @@ watch(
           <v-card min-width="200px">
             <v-list density="compact" nav>
               <v-list-item
-                prepend-icon="mdi-account-outline"
-                title="Meu perfil"
+                prepend-icon="mdi-cog-outline"
+                title="Configurações"
               ></v-list-item>
               <v-list-item
-                prepend-icon="mdi-heart-outline"
-                title="Favoritos"
+                prepend-icon="mdi-exit-to-app"
+                title="Sair"
               ></v-list-item>
             </v-list>
           </v-card>
@@ -195,8 +180,21 @@ watch(
 }
 
 .drawer {
-  background-color: transparent !important; /* Remove a cor de fundo */
-  border-right: none !important; /* Remove a borda */
+  background: linear-gradient(
+    60deg,
+    rgb(185, 168, 255) 0%,
+    rgba(90, 236, 255, 0.116) 100%
+  ) !important;
+  border-right: none !important;
+}
+
+/* Para o tema escuro */
+.dark .drawer {
+  background: linear-gradient(
+    112.1deg,
+    rgb(32, 38, 57) 11.4%,
+    rgb(63, 76, 119) 70.2%
+  ) !important;
 }
 
 .logo {
