@@ -5,19 +5,24 @@ import { iMensagem } from './interface';
 export const state = reactive({
     loading: false,
     input: <string | null>null,
-    messages: <iMensagem[]>([]),
+    messages: <iMensagem[]>([
+        { 
+            id: 1, 
+            text: "Olá! Eu sou a Polaris. Como posso ajudá-lo? 😊", 
+            sender: 'bot', 
+            timestamp: new Date() 
+        }
+    ]), // Mensagem inicial da Polaris
     response: <any>null,
     inputDisabled: false,
     idChat: (Math.random() + 1).toString(36).substring(7),
     userAvatarSrc: 'src/assets/user.png',
     botAvatarSrc: 'src/assets/bot.png',
-})
-
+});
 
 export const actions = {
-
     async enviarMsg() {
-        if (state.input.trim() !== '') {
+        if (state.input?.trim()) {
             state.inputDisabled = true;
             const newMessage: iMensagem = {
                 id: state.messages.length + 1,
@@ -30,26 +35,23 @@ export const actions = {
                 state.loading = true;
 
                 state.response = await axios.post(
-                    'http://localhost:9001/chat/send',
-                    [
-                        {
-                            role: 'user:',
-                            content: state.input,
-                            chatID: state.idChat,
-                        },
-                    ],
+                    'http://localhost:8000/inference/',
                     {
-                        headers: {
-                            'content-type': 'application/json',
-                            'Access-Control-Allow-Credentials': 'true',
-                            'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-                            'Access-Control-Allow-Origin': '*',
-                            'Access-Control-Allow-Headers': '*',
-                        },
+                        prompt: state.input,
+                        stop_words: ["Pergunta:", "User:"],
+                        temperature: 0.2,
+                        top_p: 0.2,
+                        top_k: 40,
+                        frequency_penalty: 2.0,
+                        presence_penalty: 2.4,
+                        max_tokens: 1024,
+                    },
+                    {
+                        headers: { 'content-type': 'application/json' },
                     }
                 );
 
-                const botResponse = state.response.data.content;
+                const botResponse = state.response.data.resposta;
 
                 state.messages.push(newMessage, {
                     id: state.messages.length + 2,
@@ -59,14 +61,12 @@ export const actions = {
                 });
 
                 console.log(botResponse);
-
-
                 state.input = '';
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
                     id: state.messages.length + 1,
-                    text: `Error: Could not connect to the backend: ${error}`,
+                    text: `Erro: Não foi possível conectar ao backend.`,
                     sender: 'bot',
                     timestamp: new Date(),
                 });
@@ -76,18 +76,6 @@ export const actions = {
             }
         }
     },
-
-    // setup() {
-    //     if (state.messages.length === 0) {
-    //         state.messages.push({
-    //             id: 1,
-    //             text: 'Olá! Como posso ajudá-lo? 😊',
-    //             sender: 'bot',
-    //             timestamp: new Date(),
-    //         });
-    //     }
-    // }
-
-}
+};
 
 export default { state, actions };

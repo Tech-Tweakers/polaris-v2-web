@@ -1,9 +1,30 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, nextTick } from "vue"; // Removida a importação duplicada
 import globalActions from "../../store/globalActions";
 import { actions, state } from "./chatui";
 
-const isDrawerOpen = ref(false);
+const chatContainer = ref<HTMLElement | null>(null);
+const isDrawerOpen = ref(true);
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    }
+  });
+};
+
+// Aguarda nova mensagem e rola para baixo se for do bot
+watch(
+  () => state.messages.length,
+  async () => {
+    await nextTick(); // Aguarda o Vue renderizar completamente antes de rolar
+    const lastMessage = state.messages[state.messages.length - 1];
+    if (lastMessage?.sender === "bot") {
+      scrollToBottom();
+    }
+  }
+);
 </script>
 
 <template>
@@ -12,24 +33,15 @@ const isDrawerOpen = ref(false);
     <v-navigation-drawer v-model="isDrawerOpen" app flat class="drawer">
       <v-list>
         <v-list-subheader>Menu</v-list-subheader>
-        <v-list-item prepend-icon="mdi-home" title="Home"></v-list-item>
-        <v-list-item prepend-icon="mdi-account" title="Usuários"></v-list-item>
-        <v-list-group value="Clientes">
+        <v-list-group value="Chats">
           <template #activator="{ props }">
             <v-list-item
               v-bind="props"
               prepend-icon="mdi-account-circle"
-              title="Clientes"
+              title="Chats"
             ></v-list-item>
           </template>
-          <v-list-item
-            prepend-icon="mdi-currency-usd"
-            title="Vendas"
-          ></v-list-item>
-          <v-list-item
-            prepend-icon="mdi-chart-line"
-            title="Relatório"
-          ></v-list-item>
+          <!-- Lista de chats -->
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
@@ -52,11 +64,6 @@ const isDrawerOpen = ref(false);
           color="auto"
           icon="mdi-theme-light-dark"
         ></v-btn>
-        <v-btn icon class="mr-2">
-          <v-badge dot color="info">
-            <v-icon>mdi-bell-outline</v-icon>
-          </v-badge>
-        </v-btn>
         <v-menu>
           <template #activator="{ props }">
             <v-avatar v-bind="props">
@@ -68,12 +75,12 @@ const isDrawerOpen = ref(false);
           <v-card min-width="200px">
             <v-list density="compact" nav>
               <v-list-item
-                prepend-icon="mdi-account-outline"
-                title="Meu perfil"
+                prepend-icon="mdi-cog-outline"
+                title="Configurações"
               ></v-list-item>
               <v-list-item
-                prepend-icon="mdi-heart-outline"
-                title="Favoritos"
+                prepend-icon="mdi-exit-to-app"
+                title="Sair"
               ></v-list-item>
             </v-list>
           </v-card>
@@ -84,8 +91,7 @@ const isDrawerOpen = ref(false);
     <!-- Conteúdo principal -->
     <v-main class="main-content">
       <div class="header">
-        <div class="chat-container ml-8">
-          <div class="messageInicial">Olá! Como posso ajudá-lo? 😊</div>
+        <div class="chat-container ml-8" ref="chatContainer">
           <div
             v-for="message in state.messages"
             :key="message.id"
@@ -174,8 +180,21 @@ const isDrawerOpen = ref(false);
 }
 
 .drawer {
-  background-color: transparent !important; /* Remove a cor de fundo */
-  border-right: none !important; /* Remove a borda */
+  background: linear-gradient(
+    60deg,
+    rgb(185, 168, 255) 0%,
+    rgba(90, 236, 255, 0.116) 100%
+  ) !important;
+  border-right: none !important;
+}
+
+/* Para o tema escuro */
+.dark .drawer {
+  background: linear-gradient(
+    112.1deg,
+    rgb(32, 38, 57) 11.4%,
+    rgb(63, 76, 119) 70.2%
+  ) !important;
 }
 
 .logo {
@@ -229,7 +248,8 @@ const isDrawerOpen = ref(false);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  font-size: 17px;
+  padding: 18px;
   margin-bottom: 8px;
   max-width: 70%;
   word-wrap: break-word;
@@ -329,6 +349,8 @@ const isDrawerOpen = ref(false);
 
   .message {
     max-width: 90%;
+    white-space: pre-wrap; /* Permite que as quebras de linha sejam respeitadas */
+    word-break: break-word; /* Quebra palavras longas */
   }
 
   .waves {
