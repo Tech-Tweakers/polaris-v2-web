@@ -13,7 +13,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: './ui-siap'
+    outDir: './polaris'
   },
   plugins: [
     vue(),
@@ -31,9 +31,9 @@ export default defineConfig({
       strategies: "injectManifest",
       registerType: 'autoUpdate',
       manifest: {
-        name: "Siap",
+        name: "Polaris",
         lang: "pt-br",
-        short_name: "Siap",
+        short_name: "Polaris",
         display: "standalone",
         background_color: "#c3cfe2",
         "theme_color": "#c3cfe2",
@@ -48,23 +48,23 @@ export default defineConfig({
         ],
         icons: [
           {
-            src: "icons/icon256.png",
+            src: "icons/icon.png",
             sizes: "256x256",
             type: "image/png",
           },
           {
-            src: "icons/icon256.png",
+            src: "icons/icon.png",
             sizes: "256x256",
             type: "image/png",
             purpose: "maskable",
           },
           {
-            src: "icons/icon512.png",
+            src: "icons/icon.png",
             sizes: "512x512",
             type: "image/png",
           },
           {
-            src: "icons/icon512.png",
+            src: "icons/icon.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
