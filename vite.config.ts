@@ -49,12 +49,12 @@ export default defineConfig({
         icons: [
           {
             src: "icons/icon.png",
-            sizes: "256x256",
+            sizes: "108x108",
             type: "image/png",
           },
           {
             src: "icons/icon.png",
-            sizes: "256x256",
+            sizes: "108x108",
             type: "image/png",
             purpose: "maskable",
           },

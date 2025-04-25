@@ -2,6 +2,26 @@ import { nextTick, reactive, ref } from 'vue';
 import axios from 'axios';
 import { iMensagem } from './interfacePolaris';
 
+// Função para gerar session_id aleatório
+const generateSessionId = () => {
+    return Math.random().toString(36).substring(2, 15); // Gera uma string aleatória
+};
+
+// Recuperar session_id do localStorage ou gerar um novo se não existir
+const getSessionId = () => {
+    const sessionId = localStorage.getItem('session_id');
+    if (sessionId) {
+        return sessionId;
+    } else {
+        const newSessionId = generateSessionId();
+        localStorage.setItem('session_id', newSessionId);
+        return newSessionId;
+    }
+};
+
+// Armazenando o session_id no localStorage ao iniciar
+const session_id = getSessionId();
+
 export const state = reactive({
     loading: false,
     input: <string | null>null,
@@ -18,6 +38,7 @@ export const state = reactive({
     idChat: (Math.random() + 1).toString(36).substring(7),
     userAvatarSrc: 'src/assets/user.png',
     botAvatarSrc: 'src/assets/bot.png',
+    session_id: session_id, // Usando o session_id recuperado ou gerado
 });
 
 const textAreaRef = ref();
@@ -35,15 +56,13 @@ export const actions = {
 
             try {
                 state.loading = true;
-                const inputBackup = state.input;
-                state.input = '';
+                //const inputBackup = state.input;
 
                 state.response = await axios.post(
-                    'http://localhost:8000/inference/',
+                    'https://ky-military-decade-packed.trycloudflare.com/inference/',
                     {
                         prompt: state.input,
-                        session_id: "123456789",
-                        stop_words: ["Pergunta:", "User:"],
+                        session_id: state.session_id, // Passando o session_id armazenado
                     },
                     {
                         headers: { 'content-type': 'application/json' },
@@ -60,6 +79,7 @@ export const actions = {
                 });
 
                 await nextTick(); // aguarda render
+                state.input = '';
                 textAreaRef.value?.focus(); // dá foco
             } catch (error) {
                 console.error('Error sending message:', error);

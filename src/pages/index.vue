@@ -147,6 +147,7 @@ watch(
   line-height: 1.5;
   display: flex;
   align-items: center;
+  text-align: left;
 }
 
 .user-message {
