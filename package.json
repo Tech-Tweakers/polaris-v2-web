@@ -24,7 +24,7 @@
     "@vuelidate/validators": "^2.0.0-alpha.26",
     "@vueuse/core": "^7.6.1",
     "animate.css": "^4.1.1",
-    "axios": "^1.6.7",
+    "axios": "^1.9.0",
     "buffer": "^6.0.3",
     "cpf-cnpj-validator": "^1.0.3",
     "dateformat": "^5.0.1",
