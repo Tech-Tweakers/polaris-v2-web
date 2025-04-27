@@ -66,6 +66,7 @@ export const actions = {
                     },
                     {
                         headers: { 'content-type': 'application/json' },
+                        timeout: 300000,
                     }
                 );
 
