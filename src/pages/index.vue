@@ -124,7 +124,7 @@ watch(
 }
 
 .header {
-  padding: 2rem 1rem 1rem;
+  padding: 1rem 1rem 1rem;
   text-align: center;
   flex-shrink: 0;
 }
@@ -143,7 +143,7 @@ watch(
 }
 
 .message {
-  font-size: 1.3rem;
+  font-size: 1rem;
   line-height: 1.5;
   display: flex;
   align-items: center;
