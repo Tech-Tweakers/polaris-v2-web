@@ -59,7 +59,7 @@ export const actions = {
                 //const inputBackup = state.input;
 
                 state.response = await axios.post(
-                    'https://longitude-upgrading-segment-friend.trycloudflare.com/inference/',
+                    'https://formerly-search-gets-handed.trycloudflare.com/inference/',
                     {
                         prompt: state.input,
                         session_id: state.session_id, // Passando o session_id armazenado
