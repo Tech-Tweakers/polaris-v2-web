@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import Pages from 'vite-plugin-pages';
 import { VitePWA } from "vite-plugin-pwa";
-// import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,7 +22,6 @@ export default defineConfig({
       exclude: ["**/components/*.vue"],
     }),
     VitePWA({
-      // mode: "development",
       base: "./",
       srcDir: "src",
       filename: "sw.ts",
@@ -36,14 +34,14 @@ export default defineConfig({
         short_name: "Siap",
         display: "standalone",
         background_color: "#c3cfe2",
-        "theme_color": "#c3cfe2",
-        "orientation": "portrait",
-        "categories": ["Office"],
-        "screenshots": [
+        theme_color: "#c3cfe2",
+        orientation: "portrait",
+        categories: ["Office"],
+        screenshots: [
           {
-            "src": "screen.jpg",
-            "sizes": "1104x1104",
-            "type": "image/jpg"
+            src: "screen.jpg",
+            sizes: "1104x1104",
+            type: "image/jpg"
           }
         ],
         icons: [
@@ -72,5 +70,11 @@ export default defineConfig({
         ],
       },
     }),
-  ]
+  ],
+  server: {
+    host: true,
+    port: 3000,
+    strictPort: true,
+    cors: true,
+  }
 });

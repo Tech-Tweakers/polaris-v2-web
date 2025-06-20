@@ -5,8 +5,7 @@ import { createApp } from 'vue';
 import vuetify from "./plugins/vuetify";
 import Maska from "maska";
 import VueMask from "@devindex/vue-mask";
-
-
+import '@mdi/font/css/materialdesignicons.css';
 import config from "./ts/config";
 import { setupInterceptorsTo } from "./pages/login/interceptor";
 

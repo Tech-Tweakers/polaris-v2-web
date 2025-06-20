@@ -1,10 +1,79 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue"; // Removida a importação duplicada
-import globalActions from "../../store/globalActions";
+import { ref, watch, nextTick } from "vue";
+import axios from "axios";
 import { actions, state } from "./chatui";
 
 const chatContainer = ref<HTMLElement | null>(null);
-const isDrawerOpen = ref(false);
+
+const isRecording = ref(false);
+const loading = ref(false);
+let mediaRecorder: MediaRecorder;
+let chunks: Blob[] = [];
+
+const toggleRecording = async () => {
+  if (!isRecording.value) {
+    // Iniciar gravação
+    chunks = [];
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+
+      if (audioBlob.size === 0) return;
+
+      const formData = new FormData();
+      formData.append("audio", audioBlob);
+      formData.append("session_id", state.idChat);
+
+      try {
+        loading.value = true;
+        const audioUrl = import.meta.env.VITE_API_AUDIO_URL;
+        const res = await axios.post(
+          `${audioUrl}/audio-inference/`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" },
+            timeout: 320000,
+          }
+        );
+
+        const resposta = res.data.resposta;
+        const ttsUrl = res.data.tts_audio_url;
+        const userAudioUrl = res.data.user_audio_url;
+
+        state.messages.push({
+          id: state.messages.length + 1,
+          text: "",
+          sender: "user",
+          timestamp: new Date(),
+          audioUrl: userAudioUrl,
+        });
+
+        state.messages.push({
+          id: state.messages.length + 2,
+          text: resposta,
+          sender: "bot",
+          timestamp: new Date(),
+          audioUrl: ttsUrl,
+        });
+      } catch (err) {
+        console.error("❌ Erro ao enviar áudio:", err);
+      } finally {
+        loading.value = false;
+        isRecording.value = false;
+      }
+    };
+
+    mediaRecorder.start();
+    isRecording.value = true;
+  } else {
+    // Parar gravação manual
+    if (mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+  }
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -14,15 +83,11 @@ const scrollToBottom = () => {
   });
 };
 
-// Aguarda nova mensagem e rola para baixo se for do bot
 watch(
   () => state.messages.length,
   async () => {
-    await nextTick(); // Aguarda o Vue renderizar completamente antes de rolar
-    const lastMessage = state.messages[state.messages.length - 1];
-    if (lastMessage?.sender === "bot") {
-      scrollToBottom();
-    }
+    await nextTick();
+    scrollToBottom();
   }
 );
 </script>
@@ -30,152 +95,72 @@ watch(
 
 <template>
   <v-app>
-    <!-- Barra lateral -->
-    <v-navigation-drawer v-model="isDrawerOpen" app flat class="drawer">
-      <v-list>
-        <v-list-subheader>Menu</v-list-subheader>
-        <v-list-item prepend-icon="mdi-home" title="Home"></v-list-item>
-        <v-list-item prepend-icon="mdi-account" title="Usuários"></v-list-item>
-        <v-list-group value="Clientes">
-          <template #activator="{ props }">
-            <v-list-item
-              v-bind="props"
-              prepend-icon="mdi-account-circle"
-              title="Clientes"
-            ></v-list-item>
-          </template>
-          <v-list-item
-            prepend-icon="mdi-currency-usd"
-            title="Vendas"
-          ></v-list-item>
-          <v-list-item
-            prepend-icon="mdi-chart-line"
-            title="Relatório"
-          ></v-list-item>
-        </v-list-group>
-      </v-list>
-    </v-navigation-drawer>
-
-    <!-- Barra de aplicativo -->
-    <v-app-bar app flat class="app-bar">
-      <v-app-bar-nav-icon
-        @click="isDrawerOpen = !isDrawerOpen"
-      ></v-app-bar-nav-icon>
-      <v-app-bar-title>
-        <span class="ml-5">Polaris AI</span>
-        <v-icon>
-          <img class="logo" src="../../../public/icons/icon.png" alt="logo" />
-        </v-icon>
-      </v-app-bar-title>
-      <template #append>
-        <v-btn
-          @click="globalActions.toggleTheme()"
-          variant="text"
-          color="auto"
-          icon="mdi-theme-light-dark"
-        ></v-btn>
-        <v-btn icon class="mr-2">
-          <v-badge dot color="info">
-            <v-icon>mdi-bell-outline</v-icon>
-          </v-badge>
-        </v-btn>
-        <v-menu>
-          <template #activator="{ props }">
-            <v-avatar v-bind="props">
-              <v-img
-                src="https://thumbs.dreamstime.com/z/nerd-portrait-young-cheerful-businessman-smiling-36201399.jpg"
-              ></v-img>
-            </v-avatar>
-          </template>
-          <v-card min-width="200px">
-            <v-list density="compact" nav>
-              <v-list-item
-                prepend-icon="mdi-account-outline"
-                title="Meu perfil"
-              ></v-list-item>
-              <v-list-item
-                prepend-icon="mdi-heart-outline"
-                title="Favoritos"
-              ></v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu>
-      </template>
-    </v-app-bar>
-
-    <!-- Conteúdo principal -->
+  <v-app-bar app flat height="42" class="app-bar">
+    <div class="titulo-barra">
+      <img class="logo" src="../../../public/icons/icon.png" alt="logo" />
+      <span class="titulo-texto">Polaris AI v2.1</span>
+    </div>
+  </v-app-bar>
     <v-main class="main-content">
-      <div class="header">
-        <div class="chat-container ml-8" ref="chatContainer">
-          <div
-            v-for="message in state.messages"
-            :key="message.id"
-            class="message"
-            :class="{
-              'user-message': message.sender === 'user',
-              'bot-message': message.sender === 'bot',
-            }"
-          >
-            <v-avatar size="35px" color="primary">
-              <v-img
-                :src="
-                  message.sender === 'user'
-                    ? state.userAvatarSrc
-                    : state.botAvatarSrc
-                "
-              />
-            </v-avatar>
-            {{ message.text }}
-          </div>
-        </div>
+    <div class="chat-scroll" ref="chatContainer">
+      <div
+        v-for="message in state.messages"
+        :key="message.id"
+        class="message"
+        :class="{
+          'user-message': message.sender === 'user',
+          'bot-message': message.sender === 'bot'
+        }"
+      >
+        <div class="message-content">
+          <template v-if="message.text && !message.audioUrl">
+            <div>{{ message.text }}</div>
+          </template>
 
-        <!-- Ondas -->
-        <div class="waves-container">
-          <svg
-            class="waves"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            viewBox="0 24 150 28"
-            preserveAspectRatio="none"
-            shape-rendering="auto"
-          >
-            <defs>
-              <path
-                id="gentle-wave"
-                d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-              />
-            </defs>
-            <g class="parallax">
-              <use xlink:href="#gentle-wave" x="48" y="0" />
-              <use xlink:href="#gentle-wave" x="48" y="3" />
-              <use xlink:href="#gentle-wave" x="48" y="5" />
-              <use xlink:href="#gentle-wave" x="48" y="7" />
-            </g>
-          </svg>
-        </div>
+          <template v-if="message.audioUrl">
+            <div style="margin-top: 8px;">
+              <audio :src="message.audioUrl" controls class="audio-player" />
+            </div>
+          </template>
 
-        <!-- Área de entrada de mensagem -->
-        <div class="textArea">
-          <v-textarea
-            v-model="state.input"
-            label="Type a message"
-            @keydown.enter.prevent="actions.enviarMsg"
-          >
-            <template #append>
-              <v-btn @click="actions.enviarMsg" color="primary">
-                <v-icon>mdi-send</v-icon>
-              </v-btn>
-            </template>
-          </v-textarea>
+          <template v-if="!message.text && !message.audioUrl">
+            <em>⚠️ Mensagem vazia?</em>
+          </template>
         </div>
       </div>
-    </v-main>
+    </div>
 
-    <!-- Rodapé -->
-    <v-footer app>
-      <div class="copyright">©Polaris 2025</div>
-      <div class="copyright ml-4">Versão: 2.0</div>
-    </v-footer>
+    <!-- Área de input + rodapé -->
+    <div class="fixed-bottom">
+      <!-- Input + Botões -->
+      <div class="input-bar">
+        <v-textarea
+          v-model="state.input"
+          label="Type a message"
+          hide-details
+          variant="outlined"
+          density="compact"
+          rows="1"
+          class="flex-grow-1 mr-2 input-small-font"
+          style="min-height: 34px;"
+          @keydown.enter.exact.prevent="actions.enviarMsg"
+        />
+        <v-btn color="primary" icon @click="actions.enviarMsg" class="mr-2" height="34" width="34">
+          <v-icon>mdi-send</v-icon>
+        </v-btn>
+        <v-btn
+          :loading="loading"
+          :color="isRecording ? 'red darken-2' : 'secondary'"
+          icon
+          @click="toggleRecording"
+          height="34"
+          width="34"
+        >
+          <v-icon>{{ isRecording ? 'mdi-stop' : 'mdi-microphone' }}</v-icon>
+        </v-btn>
+      </div>
+    </div>
+    </v-main>
 
     <!-- Overlay de carregamento -->
     <v-overlay :model-value="state.loading" persistent>
@@ -190,8 +175,38 @@ watch(
 
 <style lang="scss" scoped>
 .app-bar {
-  background-color: transparent !important; /* Remove a cor de fundo */
-  box-shadow: none !important; /* Remove a sombra */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; // alto o suficiente
+  background-color: #121212 !important;
+  box-shadow: none !important;
+}
+
+.app-bar::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1); // ou um cinzinha
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.titulo-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  height: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  box-sizing: border-box;
+  margin-right: auto;
 }
 
 .drawer {
@@ -202,28 +217,60 @@ watch(
 .logo {
   width: 23px; /* Tamanho reduzido da logo */
   height: 23px;
-  margin-left: 10px;
-  margin-bottom: 5px;
+  margin-left: 2px;
+  margin-bottom: 2px;
 }
 
 .main-content {
-  overflow: hidden; /* Remove scroll desnecessário */
-  height: 100vh; /* Altura fixa da tela */
-}
-
-.header {
-  position: relative;
-  background: linear-gradient(
-    60deg,
-    rgb(130, 105, 233) 0%,
-    rgb(90, 236, 255) 100%
-  );
-  color: white;
-  height: 100vh; /* Altura fixa da tela */
+  padding-top: 42px;
+  height: calc(100vh - 42px - 40px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
+
+.fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #121212;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+
+.v-footer {
+  justify-content: center;
+  align-items: center;
+  font-size: 8px;
+  height: 10px;
+  min-height: 20px;
+  padding: 0 12px;
+}
+
+.chat-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0px 8px 180px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+
+
+.input-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+
 
 .dark .header {
   background: linear-gradient(
@@ -234,38 +281,72 @@ watch(
 }
 
 .chat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; // Impede centralização
+  padding: 8px;
   flex-grow: 1;
   overflow-y: auto;
-  padding: 16px;
-  margin-bottom: 20px;
-  max-height: calc(100vh - 200px);
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .messageInicial {
   font-size: 17px;
-  padding: 16px;
+  padding: 0px;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 .message {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 17px;
-  padding: 18px;
-  margin-bottom: 8px;
-  max-width: 70%;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 240px;
+  max-width: 90%;
+  font-size: 13px;
+  padding: 14px 18px;
+  margin: 8px;
+  border-radius: 12px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+
+
+.message-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.bubble {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  max-width: 80ch;
+  line-height: 1.6;
   word-wrap: break-word;
 }
 
-.user-message {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px 8px 0 8px;
+.bot-message {
+  background-color: #2d2d2d;
+  color: #fff;
+  align-self: flex-start;
+  border-radius: 12px 12px 12px 0;
+  max-width: 40%;
 }
 
-.bot-message {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 8px 8px 8px 0;
+.user-message {
+  background-color: #005f63;
+  color: #fff;
+  align-self: flex-end;
+  border-radius: 12px 12px 0 12px;
+  max-width: 40%;
 }
+
 
 .waves-container {
   position: relative;
@@ -336,31 +417,61 @@ watch(
 }
 
 .copyright {
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .textArea {
-  margin-bottom: 50px;
+  margin-bottom: 100px;
+}
+
+.input-area {
+  position: absolute;
+  background-color: transparent;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2); // pode ajustar
+  backdrop-filter: blur(4px);
+  z-index: 2;
 }
 
 @media (max-width: 600px) {
+
+  .input-area {
+    padding-bottom: 50px;
+  }
+
   .chat-container {
-    padding: 8px;
-    max-height: calc(100vh - 150px); /* Ajuste para dispositivos móveis */
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    flex-grow: 1;
+    overflow-y: auto;
   }
 
   .message {
-    max-width: 90%;
-    white-space: pre-wrap; /* Permite que as quebras de linha sejam respeitadas */
-    word-break: break-word; /* Quebra palavras longas */
+    display: inline-block;
+    max-width: 70ch;
+    font-size: 15px;
+    padding: 14px 18px;
+    margin: 8px;
+    border-radius: 12px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   .waves {
     height: 10vh;
   }
-
-  .textArea {
-    margin-bottom: 100px;
-  }
 }
+
+.audio-player {
+  width: 100%;
+  max-width: 100%;
+  min-width: 200px;
+  border-radius: 8px;
+}
+
+
 </style>

@@ -50,7 +50,7 @@ import globalActions from "@/store/globalActions";
 
   <!--Content starts-->
   <div class="content flex">
-    <p>©Polaris 2025</p>
+    <p>©Tech-Tweakers 2025</p>
     <p class="ml-4">Versão: 2.0</p>
   </div>
   <!--Content ends-->
@@ -90,17 +90,6 @@ p {
   // color: #333333;
 }
 
-.header {
-  position: relative;
-  text-align: center;
-  background: linear-gradient(
-    60deg,
-    rgba(84, 58, 183, 1) 0%,
-    rgba(0, 172, 193, 1) 100%
-  );
-  color: white;
-}
-
 .dark .header {
   background: linear-gradient(
     112.1deg,
@@ -118,10 +107,9 @@ p {
 }
 
 .inner-header {
-  height: 75vh;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+  min-height: 64px;
+  max-height: 120px;
+  padding: 16px;
 }
 
 .flex {

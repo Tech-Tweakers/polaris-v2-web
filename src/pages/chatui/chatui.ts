@@ -8,9 +8,9 @@ export const state = reactive({
     messages: <iMensagem[]>([
         { 
             id: 1, 
-            text: "Olá! Eu sou a Polaris. Como posso ajudá-lo? 😊", 
+            text: "Olá, em que posso ajudar?", 
             sender: 'bot', 
-            timestamp: new Date() 
+            timestamp: new Date(),
         }
     ]), // Mensagem inicial da Polaris
     response: <any>null,
@@ -33,9 +33,9 @@ export const actions = {
 
             try {
                 state.loading = true;
-
+                const textUrl = import.meta.env.VITE_API_TEXT_URL;
                 state.response = await axios.post(
-                    'http://localhost:8000/inference/',
+                    `${textUrl}/inference/`,
                     {
                         prompt: state.input,
                         stop_words: ["Pergunta:", "User:"],
@@ -48,6 +48,7 @@ export const actions = {
                     },
                     {
                         headers: { 'content-type': 'application/json' },
+                        timeout: 60000,
                     }
                 );
 
