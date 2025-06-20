@@ -3,4 +3,5 @@ export interface iMensagem {
     text: string;
     sender: string;
     timestamp: Date;
+    audioUrl?: string;
 }

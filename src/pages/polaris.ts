@@ -1,6 +1,6 @@
 import { nextTick, reactive, ref } from 'vue';
 import axios from 'axios';
-import { iMensagem } from './interfacePolaris';
+import { iMensagem } from '../interfaces/interfacePolaris';
 
 // Função para gerar session_id aleatório
 const generateSessionId = () => {
@@ -38,12 +38,17 @@ export const state = reactive({
     idChat: (Math.random() + 1).toString(36).substring(7),
     userAvatarSrc: 'src/assets/user.png',
     botAvatarSrc: 'src/assets/bot.png',
-    session_id: session_id, // Usando o session_id recuperado ou gerado
+    session_id: session_id, // Usando o session_id recuperado ou gerado,
+    isRecording: false,
+    loadingAudio: false,
+    mediaRecorder: null as MediaRecorder | null,
+    chunks: <BlobPart[]>[],
 });
 
 const textAreaRef = ref();
 
 export const actions = {
+
     async enviarMsg() {
         if (state.input?.trim()) {
             state.inputDisabled = true;
@@ -96,6 +101,72 @@ export const actions = {
             }
         }
     },
+
+    async toggleRecording() {
+        if (!state.isRecording) {
+            // Iniciar gravação
+            state.chunks = [];
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            state.mediaRecorder = new MediaRecorder(stream);
+            state.mediaRecorder.ondataavailable = e => state.chunks.push(e.data);
+
+            state.mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(state.chunks, { type: 'audio/webm' });
+
+                if (audioBlob.size === 0) return;
+
+                const formData = new FormData();
+                formData.append("audio", audioBlob);
+                formData.append("session_id", state.idChat);
+
+                try {
+                    state.loadingAudio = true;
+                    const audioUrl = import.meta.env.VITE_API_AUDIO_URL;
+                    const res = await axios.post(
+                        `${audioUrl}/audio-inference/`,
+                        formData,
+                        {
+                            headers: { "Content-Type": "multipart/form-data" },
+                            timeout: 320000,
+                        }
+                    );
+
+                    const resposta = res.data.resposta;
+                    const ttsUrl = res.data.tts_audio_url;
+                    const userAudioUrl = res.data.user_audio_url;
+
+                    state.messages.push({
+                        id: state.messages.length + 1,
+                        text: "",
+                        sender: "user",
+                        timestamp: new Date(),
+                        audioUrl: userAudioUrl,
+                    });
+
+                    state.messages.push({
+                        id: state.messages.length + 2,
+                        text: resposta,
+                        sender: "bot",
+                        timestamp: new Date(),
+                        audioUrl: ttsUrl,
+                    });
+                } catch (err) {
+                    console.error("❌ Erro ao enviar áudio:", err);
+                } finally {
+                    state.loadingAudio = false;
+                    state.isRecording = false;
+                }
+            };
+
+            state.mediaRecorder.start();
+            state.isRecording = true;
+        } else {
+            // Parar gravação manual
+            if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
+                state.mediaRecorder.stop();
+            }
+        }
+    }
 };
 
 export default { state, actions };

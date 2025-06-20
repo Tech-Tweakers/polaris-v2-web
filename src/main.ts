@@ -8,12 +8,10 @@ import VueMask from "@devindex/vue-mask";
 
 
 import config from "./ts/config";
-import { setupInterceptorsTo } from "./pages/login/interceptor";
 
 
 const app = createApp(App)
 
-setupInterceptorsTo(axios);
 
 axios.defaults.baseURL = config.SERVER + ":" + config.PORT
 
