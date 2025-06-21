@@ -62,9 +62,9 @@ export const actions = {
             try {
                 state.loading = true;
                 //const inputBackup = state.input;
-
+                const textUrl = import.meta.env.VITE_API_TEXT_URL;
                 state.response = await axios.post(
-                    'https://ky-military-decade-packed.trycloudflare.com/inference/',
+                    `${textUrl}/inference/`,
                     {
                         prompt: state.input,
                         session_id: state.session_id, // Passando o session_id armazenado
@@ -127,7 +127,7 @@ export const actions = {
                         formData,
                         {
                             headers: { "Content-Type": "multipart/form-data" },
-                            timeout: 320000,
+                            timeout: 920000,
                         }
                     );
 
