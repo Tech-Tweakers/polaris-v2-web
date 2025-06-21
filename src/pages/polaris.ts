@@ -28,7 +28,7 @@ export const state = reactive({
     messages: <iMensagem[]>([
         {
             id: 1,
-            text: "Olá! Eu sou a Polaris. Como posso ajudá-lo? 😊",
+            text: "Olá, em que posso ajudar? 😊",
             sender: 'bot',
             timestamp: new Date()
         }
@@ -71,7 +71,7 @@ export const actions = {
                     },
                     {
                         headers: { 'content-type': 'application/json' },
-                        timeout: 300000,
+                        timeout: 60000,
                     }
                 );
 

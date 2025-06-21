@@ -3,9 +3,12 @@ import { nextTick, ref } from "vue";
 import { useTheme } from "vuetify";
 import globalState from "@/store/globalState";
 
+import $ from "jquery";
+
 globalState.theme = useTheme();
 
 let install = ref(false);
+let deferredPrompt: null;
 
 nextTick(() => {
   window.addEventListener("appinstalled", () => {
@@ -27,6 +30,7 @@ nextTick(() => {
     deferredPrompt = e;
     install.value = true;
     console.log("beforeinstallprompt");
+
     setTimeout(() => {
       install.value = false;
     }, 10000);

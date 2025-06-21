@@ -31,18 +31,19 @@ watch(
 
     <v-app>
         <v-main class="main-layout header">
-            <div class="header d-flex flex-column align-center justify-center">
-                <v-img src="/icons/icon.png" alt="logo Polaris" width="48" class="mb-3" />
-                <h1 class="text-h7 font-weight-medium mb-2">Bem-vindo à Polaris</h1>
-                <p class="text-subtitle-2 font-italic">Sua IA conversacional pessoal</p>
-            </div>
+             <v-app-bar app flat height="42" class="app-bar">
+                <div class="titulo-barra">
+                <img width="25" class="logo" src="../../../public/icons/icon.png" alt="logo" />
+                <span class="titulo-texto">Polaris AI v2.1</span>
+                </div>
+            </v-app-bar>
 
             <div class="chat-container" ref="chatContainer">
                 <div v-for="message in state.messages" :key="message.id" class="message" :class="{
                     'user-message': message.sender === 'user',
                     'bot-message': message.sender === 'bot'
                 }">
-                    <div class="message-content">
+                    <div>
                         <template v-if="message.text && !message.audioUrl">
                             <span class="ml-2">{{ message.text }}</span>
                         </template>
@@ -76,8 +77,7 @@ watch(
             </div>
 
             <div class="d-flex justify-center align-center flex-column">
-                <p class="text-caption">© Polaris 2025</p>
-                <p class="text-caption">Versão: 2.0</p>
+                <p class="text-caption">© Polaris AI v2.1 2025</p>
             </div>
             <v-overlay :model-value="state.loading" class="align-center justify-center" persistent>
                 <v-progress-circular color="primary" indeterminate size="64"></v-progress-circular>
@@ -87,11 +87,24 @@ watch(
 </template>
 
 <style scoped lang="scss">
+.titulo-barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 20px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  height: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  box-sizing: border-box;
+  margin-right: auto;
+}
+
 .btnDark {
     position: fixed;
-    top: 16px;
-    left: 16px;
-    z-index: 10;
+    right: 16px;
+    z-index: 1000;
 }
 
 .main-layout {
@@ -116,13 +129,14 @@ watch(
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 1rem 2rem;
+    padding-top: 50px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
 .message {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     line-height: 1.5;
     display: flex;
     align-items: center;
@@ -139,8 +153,10 @@ watch(
 .bot-message {
     align-self: flex-start;
     background-color: rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
     padding: 0.5rem 1rem;
+    align-self: flex-start;
+    border-radius: 12px 12px 12px 0;
+    max-width: 40%;
 }
 
 .textArea {
