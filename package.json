@@ -71,7 +71,7 @@
     "sass": "^1.38.1",
     "sass-loader": "^12.1.0",
     "typescript": "^4.3.2",
-    "vite": "^2.4.4",
+    "vite": "^6.3.5",
     "vite-plugin-pages": "^0.32.0",
     "vite-plugin-pwa": "^0.12.8",
     "vite-plugin-vuetify": "^1.0.0-alpha.0",

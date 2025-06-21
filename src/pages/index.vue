@@ -41,7 +41,7 @@ watch(
           <img
             width="25"
             class="logo"
-            src="../../../public/icons/icon.png"
+            src="../assets/icon.png"
             alt="logo"
           />
           <span class="titulo-texto">Polaris AI v2.1</span>
