@@ -52,9 +52,9 @@ nextTick(() => {
 @import "vuetify/styles";
 @import "@mdi/font/css/materialdesignicons.css";
 @import "sweetalert2/src/sweetalert2.scss";
-@import "@/assets/index.scss";
+@import "@/assets/index.css";
 @import "animate.css";
-@import "@/styles/global.scss";
+@import "@/styles/global.css";
 
 #pnCalk {
   top: 260px;
