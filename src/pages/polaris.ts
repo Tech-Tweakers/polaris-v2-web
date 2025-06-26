@@ -2,12 +2,10 @@ import { nextTick, reactive, ref } from 'vue';
 import axios from 'axios';
 import { iMensagem } from '../interfaces/interfacePolaris';
 
-// Função para gerar session_id aleatório
 const generateSessionId = () => {
-    return Math.random().toString(36).substring(2, 15); // Gera uma string aleatória
+    return Math.random().toString(36).substring(2, 15);
 };
 
-// Recuperar session_id do localStorage ou gerar um novo se não existir
 const getSessionId = () => {
     const sessionId = localStorage.getItem('session_id');
     if (sessionId) {
@@ -19,7 +17,6 @@ const getSessionId = () => {
     }
 };
 
-// Armazenando o session_id no localStorage ao iniciar
 const session_id = getSessionId();
 
 export const state = reactive({
@@ -32,13 +29,13 @@ export const state = reactive({
             sender: 'bot',
             timestamp: new Date()
         }
-    ]), // Mensagem inicial da Polaris
+    ]),
     response: <any>null,
     inputDisabled: false,
     idChat: (Math.random() + 1).toString(36).substring(7),
     userAvatarSrc: 'src/assets/user.png',
     botAvatarSrc: 'src/assets/bot.png',
-    session_id: session_id, // Usando o session_id recuperado ou gerado,
+    session_id: session_id,
     isRecording: false,
     loadingAudio: false,
     mediaRecorder: null as MediaRecorder | null,
@@ -61,13 +58,12 @@ export const actions = {
 
             try {
                 state.loading = true;
-                //const inputBackup = state.input;
                 const textUrl = import.meta.env.VITE_API_TEXT_URL;
                 state.response = await axios.post(
                     `${textUrl}/inference/`,
                     {
                         prompt: state.input,
-                        session_id: state.session_id, // Passando o session_id armazenado
+                        session_id: state.session_id,
                     },
                     {
                         headers: { 'content-type': 'application/json' },
@@ -84,9 +80,9 @@ export const actions = {
                     timestamp: new Date(),
                 });
 
-                await nextTick(); // aguarda render
+                await nextTick();
                 state.input = '';
-                textAreaRef.value?.focus(); // dá foco
+                textAreaRef.value?.focus();
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
@@ -114,6 +110,10 @@ export const actions = {
                 const audioBlob = new Blob(state.chunks, { type: 'audio/webm' });
 
                 if (audioBlob.size === 0) return;
+
+                // Libera o microfone aqui
+                const tracks = state.mediaRecorder?.stream?.getTracks?.();
+                tracks?.forEach(track => track.stop());
 
                 const formData = new FormData();
                 formData.append("audio", audioBlob);
@@ -155,13 +155,14 @@ export const actions = {
                 } finally {
                     state.loadingAudio = false;
                     state.isRecording = false;
+                    state.mediaRecorder = null;
+                    state.chunks = [];
                 }
             };
 
             state.mediaRecorder.start();
             state.isRecording = true;
         } else {
-            // Parar gravação manual
             if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
                 state.mediaRecorder.stop();
             }
