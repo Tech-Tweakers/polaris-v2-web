@@ -150,7 +150,7 @@ watch(
   padding-top: 8px;
   padding-bottom: 8px;
   height: 100%;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
@@ -325,7 +325,7 @@ watch(
   }
 
   .titulo-texto {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .textArea {
