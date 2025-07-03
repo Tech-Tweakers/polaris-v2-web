@@ -257,7 +257,7 @@ watch(
   color: #aaa;
   margin-top: 4px;
   text-align: right;
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 .user-message .timestamp {
