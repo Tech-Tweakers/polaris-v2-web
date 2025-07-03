@@ -6,6 +6,18 @@ import { actions, state } from "./polaris";
 const chatContainer = ref<HTMLElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
+const formatTimestamp = (ts: string | Date) => {
+  const date = typeof ts === "string" ? new Date(ts) : ts;
+
+  const dia = String(date.getDate()).padStart(2, "0");
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const horas = date.getHours().toString().padStart(2, "0");
+  const minutos = date.getMinutes().toString().padStart(2, "0");
+
+  return `${dia}/${mes} - ${horas}:${minutos}`;
+};
+
+
 const scrollToBottom = () => {
   if (scrollTimeout) clearTimeout(scrollTimeout);
   scrollTimeout = setTimeout(() => {
@@ -57,11 +69,16 @@ watch(
           <div>
             <template v-if="message.text && !message.audioUrl">
               <span class="ml-2">{{ message.text }}</span>
+              <div class="timestamp">
+                {{ formatTimestamp(message.timestamp) }}
+              </div>
             </template>
-
             <template v-if="message.audioUrl">
               <div style="margin-top: 8px">
                 <audio :src="message.audioUrl" controls class="audio-player" />
+              </div>
+              <div class="timestamp">
+                {{ formatTimestamp(message.timestamp) }}
               </div>
             </template>
 
@@ -234,6 +251,19 @@ watch(
   min-width: 200px;
   border-radius: 8px;
 }
+
+.timestamp {
+  font-size: 0.6rem;
+  color: #aaa;
+  margin-top: 4px;
+  text-align: right;
+  opacity: 0.6;
+}
+
+.user-message .timestamp {
+  text-align: right;
+}
+
 
 .v-btn {
   border-radius: 50%;
