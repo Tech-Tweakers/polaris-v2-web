@@ -99,7 +99,7 @@ watch(
           :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
           @keydown.enter.prevent="actions.enviarMsg"
         />
-        <v-btn @click="actions.enviarMsg" icon class="btn-enviar">
+        <v-btn @click="actions.enviarMsg" icon class="btn-enviar" color="#111">
           <v-icon>mdi-send</v-icon>
         </v-btn>
 
@@ -150,7 +150,7 @@ watch(
   padding-top: 8px;
   padding-bottom: 8px;
   height: 100%;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
@@ -181,7 +181,7 @@ watch(
 }
 
 .message {
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.5;
   display: flex;
   align-items: flex-start;
