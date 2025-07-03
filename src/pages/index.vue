@@ -150,7 +150,7 @@ watch(
   padding-top: 8px;
   padding-bottom: 8px;
   height: 100%;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
@@ -181,7 +181,7 @@ watch(
 }
 
 .message {
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.5;
   display: flex;
   align-items: flex-start;
@@ -316,6 +316,7 @@ watch(
 @media (max-width: 600px) {
   .chat-container {
     padding: 0.5rem 1rem;
+    padding-top: 80px !important;
   }
 
   .user-message,
