@@ -11,7 +11,7 @@
     "build2": "vue-tsc --noEmit && vite build",
     "build:electron": "electron-builder",
     "build:for:electron": "vue-tsc --noEmit && cross-env ELECTRON=true vite build",
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:electron": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"npm run electron\"",
     "electron": "wait-on tcp:3000 && cross-env IS_DEV=true electron .",
     "electron:pack": "electron-builder --dir"
