@@ -316,7 +316,7 @@ watch(
 @media (max-width: 600px) {
   .chat-container {
     padding: 0.5rem 1rem;
-    padding-top: 80px !important;
+    padding-top: 30px !important;
   }
 
   .user-message,
