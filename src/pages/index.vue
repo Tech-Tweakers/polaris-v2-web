@@ -4,13 +4,15 @@ import { ref, watch, nextTick } from "vue";
 import { actions, state } from "./polaris";
 
 const chatContainer = ref<HTMLElement | null>(null);
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const scrollToBottom = () => {
-  nextTick(() => {
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
     if (chatContainer.value) {
       chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
     }
-  });
+  }, 100);
 };
 
 watch(
@@ -26,26 +28,20 @@ watch(
 </script>
 
 <template>
-  <v-btn
-    @click="globalActions.toggleTheme()"
-    variant="text"
-    class="btnDark"
-    color="primary"
-    icon="mdi-theme-light-dark"
-  ></v-btn>
-
   <v-app>
     <v-main class="main-layout header">
       <v-app-bar app flat height="42" class="app-bar">
         <div class="titulo-barra">
-          <img
-            width="25"
-            class="logo"
-            src="../assets/icon.png"
-            alt="logo"
-          />
+          <img width="25" class="logo" src="../assets/icon.png" alt="logo" />
           <span class="titulo-texto">Polaris AI v2.1</span>
         </div>
+        <v-spacer />
+        <v-btn
+          @click="globalActions.toggleTheme()"
+          variant="text"
+          color="primary"
+          icon="mdi-theme-light-dark"
+        />
       </v-app-bar>
 
       <div class="chat-container" ref="chatContainer">
@@ -76,40 +72,38 @@ watch(
         </div>
       </div>
 
-      <div class="textArea pa-4">
-        <v-textarea
-          ref="textAreaRef"
+      <div class="textArea pa-4 d-flex align-center">
+        <v-text-field
           v-model="state.input"
           label="Pergunte algo"
           hide-details
-          rows="3"
-          class="rounded"
+          class="flex-grow-1 mr-2"
+          :readonly="state.isRecording || state.loadingAudio"
+          :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
           @keydown.enter.prevent="actions.enviarMsg"
+        />
+
+        <v-btn @click="actions.enviarMsg" icon class="btn-enviar">
+          <v-icon>mdi-send</v-icon>
+        </v-btn>
+
+        <v-btn
+          class="ml-2 pulse-on-record"
+          :loading="state.loadingAudio"
+          :color="state.isRecording ? 'red darken-2' : 'teal darken-1'"
+          icon
+          @click="actions.toggleRecording"
         >
-          <template #append>
-            <v-btn @click="actions.enviarMsg" color="primary" icon>
-              <v-icon>mdi-send</v-icon>
-            </v-btn>
-            <v-btn
-              class="ml-2"
-              :loading="state.loadingAudio"
-              :color="state.isRecording ? 'red darken-2' : 'secondary'"
-              icon
-              @click="actions.toggleRecording"
-              height="50"
-              width="50"
-            >
-              <v-icon>{{
-                state.isRecording ? "mdi-stop" : "mdi-microphone"
-              }}</v-icon>
-            </v-btn>
-          </template>
-        </v-textarea>
+          <v-icon>{{
+            state.isRecording ? "mdi-stop" : "mdi-microphone"
+          }}</v-icon>
+        </v-btn>
       </div>
 
       <div class="d-flex justify-center align-center flex-column">
         <p class="text-caption">© Polaris AI v2.1 2025</p>
       </div>
+
       <v-overlay
         :model-value="state.loading"
         class="align-center justify-center"
@@ -126,6 +120,12 @@ watch(
 </template>
 
 <style scoped lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
 .titulo-barra {
   display: flex;
   align-items: center;
@@ -135,22 +135,16 @@ watch(
   padding-bottom: 8px;
   height: 100%;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
-}
-
-.btnDark {
-  position: fixed;
-  right: 16px;
-  z-index: 1000;
 }
 
 .main-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: var(--v-theme-background);
+  background: linear-gradient(to bottom right, #1e1e1e, #111111);
   overflow: hidden;
 }
 
@@ -159,10 +153,6 @@ watch(
   text-align: center;
   flex-shrink: 0;
 }
-
-// .dark .header {
-//   background: linear-gradient(112.1deg, #202639 11.4%, #3f4c77 70.2%);
-// }
 
 .chat-container {
   flex: 1 1 auto;
@@ -178,36 +168,63 @@ watch(
   font-size: 1rem;
   line-height: 1.5;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   text-align: left;
+  position: relative;
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .user-message {
   align-self: flex-end;
-  background-color: rgba(0, 172, 193, 0.2);
-  border-radius: 12px;
-  padding: 0.5rem 1rem;
+  background-color: #003f47;
+  color: #d1faff;
+  border-bottom-right-radius: 4px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: -8px;
+    top: 10px;
+    border: 8px solid transparent;
+    border-left-color: #003f47;
+  }
 }
 
 .bot-message {
   align-self: flex-start;
-  background-color: rgba(255, 255, 255, 0.08);
-  padding: 0.5rem 1rem;
-  align-self: flex-start;
-  border-radius: 12px 12px 12px 0;
-  max-width: 85%;
+  background-color: #2c2c2c;
+  color: #f5f5f5;
+  border-bottom-left-radius: 4px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 10px;
+    border: 8px solid transparent;
+    border-right-color: #2c2c2c;
+  }
 }
 
 .textArea {
   background-color: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 1rem;
   flex-shrink: 0;
   border-radius: 20px;
 }
 
-.dark .content {
-  background-color: #38446b;
-  color: #ddd;
+.input-bloqueado input {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .audio-player {
@@ -215,5 +232,73 @@ watch(
   max-width: 100%;
   min-width: 200px;
   border-radius: 8px;
+}
+
+.v-btn {
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+  background-color: #1f1f1f;
+  color: white;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .v-icon {
+    font-size: 20px;
+  }
+}
+
+.pulse-on-record {
+  background-color: #b71c1c !important;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.pulse-on-record:not([style*="red"]) {
+  animation: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .chat-container {
+    padding: 0.5rem 1rem;
+  }
+
+  .user-message,
+  .bot-message {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .titulo-texto {
+    font-size: 14px;
+  }
+
+  .textArea {
+    padding: 0.5rem;
+  }
 }
 </style>
