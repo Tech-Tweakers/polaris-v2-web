@@ -36,12 +36,12 @@ watch(
           <span class="titulo-texto">Polaris AI v2.1</span>
         </div>
         <v-spacer />
-        <v-btn
+        <!-- <v-btn
           @click="globalActions.toggleTheme()"
           variant="text"
           color="primary"
           icon="mdi-theme-light-dark"
-        />
+        /> -->
       </v-app-bar>
 
       <div class="chat-container" ref="chatContainer">
@@ -78,11 +78,10 @@ watch(
           label="Pergunte algo"
           hide-details
           class="flex-grow-1 mr-2"
-          :readonly="state.isRecording || state.loadingAudio"
+          :disabled="state.isRecording || state.loadingAudio"
           :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
           @keydown.enter.prevent="actions.enviarMsg"
         />
-
         <v-btn @click="actions.enviarMsg" icon class="btn-enviar">
           <v-icon>mdi-send</v-icon>
         </v-btn>
@@ -134,7 +133,7 @@ watch(
   padding-top: 8px;
   padding-bottom: 8px;
   height: 100%;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
@@ -165,7 +164,7 @@ watch(
 }
 
 .message {
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.5;
   display: flex;
   align-items: flex-start;
@@ -222,10 +221,12 @@ watch(
 }
 
 .input-bloqueado input {
-  pointer-events: none;
+  cursor: not-allowed !important;
   opacity: 0.5;
-  cursor: not-allowed;
+  background-color: #222 !important;
+  color: #aaa !important;
 }
+
 
 .audio-player {
   width: 100%;
@@ -289,16 +290,16 @@ watch(
 
   .user-message,
   .bot-message {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     padding: 0.6rem 0.9rem;
   }
 
   .titulo-texto {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .textArea {
-    padding: 0.5rem;
+    padding: 0.2rem;
   }
 }
 </style>
