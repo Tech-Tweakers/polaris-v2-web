@@ -6,6 +6,14 @@ import { actions, state } from "./polaris";
 const chatContainer = ref<HTMLElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
+const handleDynamicButton = () => {
+  if (state.input?.trim()) {
+    actions.enviarMsg();
+  } else {
+    actions.toggleRecording();
+  }
+};
+
 const formatTimestamp = (ts: string | Date) => {
   const date = typeof ts === "string" ? new Date(ts) : ts;
 
@@ -99,21 +107,26 @@ watch(
           :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
           @keydown.enter.prevent="actions.enviarMsg"
         />
-        <v-btn @click="actions.enviarMsg" icon class="btn-enviar" color="#111">
-          <v-icon>mdi-send</v-icon>
-        </v-btn>
-
         <v-btn
           class="ml-2 pulse-on-record"
           :loading="state.loadingAudio"
-          :color="state.isRecording ? 'red darken-2' : 'teal darken-1'"
+          :color="state.input?.trim()
+            ? 'blue darken-2'
+            : (state.isRecording ? 'red darken-2' : 'teal darken-1')"
           icon
-          @click="actions.toggleRecording"
+          @click="handleDynamicButton"
         >
-          <v-icon>{{
-            state.isRecording ? "mdi-stop" : "mdi-microphone"
-          }}</v-icon>
+          <v-icon>
+            {{
+              state.input?.trim()
+                ? 'mdi-send'
+                : state.isRecording
+                ? 'mdi-stop'
+                : 'mdi-microphone'
+            }}
+          </v-icon>
         </v-btn>
+
       </div>
 
       <div class="d-flex justify-center align-center flex-column">

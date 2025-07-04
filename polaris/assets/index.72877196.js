@@ -1,1 +1,0 @@
-import{_ as o,r,o as n,c as a,w as s,a as c}from"./index.48abbaf8.js";const _={};function f(l,e){const t=r("H1");return n(),a(t,null,{default:s(()=>e[0]||(e[0]=[c("rota teste")])),_:1})}var p=o(_,[["render",f]]);export{p as default};
