@@ -127,7 +127,7 @@ export const actions = {
                         formData,
                         {
                             headers: { "Content-Type": "multipart/form-data" },
-                            timeout: 920000,
+                            timeout: 0,
                         }
                     );
 
