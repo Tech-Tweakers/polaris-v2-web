@@ -66,6 +66,24 @@ watch(
     }
   }
 );
+
+const handleEnter = (event: KeyboardEvent) => {
+  if (event.shiftKey || event.metaKey) {
+    // Ctrl + Enter (ou Cmd + Enter no Mac) → ignora, insere quebra de linha
+    const target = event.target as HTMLInputElement;
+    const cursorPos = target.selectionStart ?? state.input.length;
+    state.input =
+      state.input.slice(0, cursorPos) + "\n" + state.input.slice(cursorPos);
+    nextTick(() => {
+      target.selectionStart = target.selectionEnd = cursorPos + 1;
+    });
+  } else {
+    // Enter simples → envia
+    event.preventDefault();
+    actions.enviarMsg();
+  }
+};
+
 </script>
 
 <template>
@@ -120,15 +138,18 @@ watch(
       </div>
 
       <div class="textArea pa-4 d-flex align-center">
-        <v-text-field
+        <v-textarea
           v-model="state.input"
           label="Pergunte algo"
           hide-details
           class="flex-grow-1 mr-2"
+          auto-grow
+          rows="1"
           :disabled="state.isRecording || state.loadingAudio"
           :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
-          @keydown.enter.prevent="actions.enviarMsg"
+          @keydown.enter="handleEnter"
         />
+
         <v-btn
           class="ml-2 pulse-on-record"
           :loading="state.loadingAudio"
