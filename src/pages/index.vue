@@ -1,7 +1,28 @@
 <script setup lang="ts">
-import globalActions from "@/store/globalActions";
 import { ref, watch, nextTick } from "vue";
 import { actions, state } from "./polaris";
+
+import { marked } from 'marked';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/atom-one-dark.css'; // ou o tema que preferir
+
+marked.setOptions({
+  breaks: true,
+});
+
+const renderMarkdown = (text: string = "") => {
+  return marked.parse(text);
+};
+
+marked.use({
+  renderer: {
+    code({ text, lang }: { text: string; lang?: string }) {
+      const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
+      const highlighted = hljs.highlight(text, { language: validLang }).value;
+      return `<pre><code class="hljs ${validLang}">${highlighted}</code></pre>`;
+    }
+  }
+});
 
 const chatContainer = ref<HTMLElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -76,7 +97,8 @@ watch(
         >
           <div>
             <template v-if="message.text && !message.audioUrl">
-              <span class="ml-2">{{ message.text }}</span>
+              <span class="ml-2" v-html="renderMarkdown(message.text)"></span>
+
               <div class="timestamp">
                 {{ formatTimestamp(message.timestamp) }}
               </div>
@@ -346,4 +368,29 @@ watch(
     padding: 0.2rem;
   }
 }
+
+.bot-message span {
+  display: block;
+  white-space: pre-wrap;
+
+  code {
+    background: #444;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  pre {
+    background: #222;
+    padding: 0.5rem;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+
+  a {
+    color: #42a5f5;
+    text-decoration: underline;
+  }
+}
+
 </style>
