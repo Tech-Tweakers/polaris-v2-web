@@ -25,7 +25,7 @@ export const state = reactive({
     messages: <iMensagem[]>([
         {
             id: 1,
-            text: "Olá, em que posso ajudar? 😊",
+            text: "Olá, em que posso ajudar?",
             sender: 'bot',
             timestamp: new Date()
         }
