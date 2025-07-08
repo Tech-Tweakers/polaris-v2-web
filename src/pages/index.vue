@@ -104,8 +104,8 @@ const handleEnter = (event: KeyboardEvent) => {
     <v-main class="main-layout header">
       <v-app-bar app flat height="42" class="app-bar">
         <div class="titulo-barra">
-          <img width="25" class="logo" src="../assets/icon.png" alt="logo" />
-          <span class="titulo-texto">Polaris AI v2.1</span>
+          <img width="35" class="logo" src="../assets/icon.png" alt="logo" />
+          <span class="titulo-texto">Polaris v2</span>
         </div>
         <v-spacer />
         <!-- <v-btn
@@ -217,19 +217,21 @@ const handleEnter = (event: KeyboardEvent) => {
   font-family: 'Inter', sans-serif;
 }
 
+.v-app-bar {
+  height: 50px !important;
+  padding: 0 2rem;
+}
+
 .titulo-barra {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-left: 20px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  height: 100%;
-  font-size: 1.2rem;
-  font-weight: 500;
-  box-sizing: border-box;
-  margin-right: auto;
+  gap: 12px;
+  width: 60%;
+  font-size: 1.6rem;
+  margin-bottom: -8px;
+  font-weight: 600;
 }
+
 
 .main-layout {
   display: flex;
@@ -249,7 +251,7 @@ const handleEnter = (event: KeyboardEvent) => {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 1rem 2rem;
-  padding-top: 25px;
+  padding-top: 35px;
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
@@ -262,10 +264,10 @@ const handleEnter = (event: KeyboardEvent) => {
   align-items: flex-start;
   text-align: left;
   position: relative;
-  max-width: 85%;
+  max-width: 80%;
   padding: 0.8rem 1rem;
-  border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border-radius: 28px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
   word-wrap: break-word;
   word-break: break-word;
