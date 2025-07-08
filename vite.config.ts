@@ -13,7 +13,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: './polaris'
+    outDir: './docs'
   },
   plugins: [
     vue(),
