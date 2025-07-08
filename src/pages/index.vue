@@ -11,8 +11,19 @@ marked.setOptions({
 });
 
 const renderMarkdown = (text: string = "") => {
-  return marked.parse(text);
+  const trimmed = text.trim();
+
+  // Força o uso de <p> mesmo em textos simples
+  const fallback = `<p>${trimmed.replace(/\n/g, "<br>")}</p>`;
+
+  // Se tiver algo com cara de markdown, usa o marked mesmo
+  if (/[*_`#>\[\]]/.test(trimmed)) {
+    return marked.parse(trimmed);
+  }
+
+  return fallback;
 };
+
 
 marked.use({
   renderer: {
@@ -173,7 +184,7 @@ const handleEnter = (event: KeyboardEvent) => {
       </div>
 
       <div class="d-flex justify-center align-center flex-column">
-        <p class="text-caption">© Polaris AI v2.1 2025</p>
+        <p class="text-caption">© Tech-Tweakers 2025</p>
       </div>
 
       <v-overlay
@@ -194,6 +205,12 @@ const handleEnter = (event: KeyboardEvent) => {
 <style scoped lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
+:root {
+  --font-message: clamp(1rem, 1.2vw + 0.5rem, 1.2rem);
+  --font-small: clamp(0.75rem, 0.6vw + 0.4rem, 0.875rem);
+  --font-title: clamp(1.3rem, 1.5vw + 0.7rem, 1.7rem);
+}
+
 * {
   font-family: 'Inter', sans-serif;
 }
@@ -206,7 +223,7 @@ const handleEnter = (event: KeyboardEvent) => {
   padding-top: 8px;
   padding-bottom: 8px;
   height: 100%;
-  font-size: 20px;
+  font-size: 1.2rem;
   font-weight: 500;
   box-sizing: border-box;
   margin-right: auto;
@@ -230,21 +247,21 @@ const handleEnter = (event: KeyboardEvent) => {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 1rem 2rem;
-  padding-top: 50px;
+  padding-top: 25px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.7rem;
 }
 
 .message {
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1.5;
   display: flex;
   align-items: flex-start;
   text-align: left;
   position: relative;
   max-width: 85%;
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1rem;
   border-radius: 16px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
@@ -290,6 +307,7 @@ const handleEnter = (event: KeyboardEvent) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 1rem;
   flex-shrink: 0;
+  font-size: 1rem !important;
   border-radius: 20px;
 }
 
@@ -299,7 +317,6 @@ const handleEnter = (event: KeyboardEvent) => {
   background-color: #222 !important;
   color: #aaa !important;
 }
-
 
 .audio-player {
   width: 100%;
@@ -319,7 +336,6 @@ const handleEnter = (event: KeyboardEvent) => {
 .user-message .timestamp {
   text-align: right;
 }
-
 
 .v-btn {
   border-radius: 50%;
@@ -341,7 +357,7 @@ const handleEnter = (event: KeyboardEvent) => {
   }
 
   .v-icon {
-    font-size: 20px;
+    font-size: 1.5rem;
   }
 }
 
@@ -371,22 +387,21 @@ const handleEnter = (event: KeyboardEvent) => {
 
 @media (max-width: 600px) {
   .chat-container {
-    padding: 0.2rem 1rem;
-    padding-top: 30px !important;
+    padding: 0.5rem 1rem;
+    padding-top: 40px;
   }
 
   .user-message,
   .bot-message {
-    font-size: 0.8rem;
-    padding: 0.6rem 0.9rem;
+    padding: 0.7rem 1rem;
   }
 
   .titulo-texto {
-    font-size: 16px;
+    font-size: var(--font-message);
   }
 
   .textArea {
-    padding: 0.2rem;
+    padding: 0.4rem 0.8rem;
   }
 }
 
@@ -412,6 +427,26 @@ const handleEnter = (event: KeyboardEvent) => {
     color: #42a5f5;
     text-decoration: underline;
   }
+}
+
+.message p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message span.ml-2 {
+  display: block;
+  width: 100%;
+}
+
+
+.message br {
+  display: block;
+  content: "";
+  margin-bottom: 0.5rem;
 }
 
 </style>
