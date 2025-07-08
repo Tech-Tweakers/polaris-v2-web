@@ -92,6 +92,8 @@ const handleEnter = (event: KeyboardEvent) => {
     // Enter simples → envia
     event.preventDefault();
     actions.enviarMsg();
+    scrollToBottom();
+
   }
 };
 
@@ -405,28 +407,28 @@ const handleEnter = (event: KeyboardEvent) => {
   }
 }
 
-.bot-message span {
+.bot-message pre {
+  background: #222;
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 0.95rem;
+  white-space: pre;
+  word-break: break-word;
+}
+
+.bot-message code {
+  font-family: 'Fira Code', monospace;
   display: block;
-  white-space: pre-wrap;
+  line-height: 1.5;
+  white-space: pre;
+  background: transparent;
+}
 
-  code {
-    background: #444;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-family: monospace;
-  }
-
-  pre {
-    background: #222;
-    padding: 0.5rem;
-    border-radius: 6px;
-    overflow-x: auto;
-  }
-
-  a {
-    color: #42a5f5;
-    text-decoration: underline;
-  }
+.bot-message a {
+  color: #42a5f5;
+  text-decoration: underline;
 }
 
 .message p {
@@ -442,6 +444,18 @@ const handleEnter = (event: KeyboardEvent) => {
   width: 100%;
 }
 
+.bot-message pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+.bot-message pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bot-message pre::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 3px;
+}
 
 .message br {
   display: block;

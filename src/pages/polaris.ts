@@ -49,20 +49,28 @@ export const actions = {
     async enviarMsg() {
         if (state.input?.trim()) {
             state.inputDisabled = true;
+
+            const userText = state.input.trim();
             const newMessage: iMensagem = {
                 id: state.messages.length + 1,
-                text: state.input,
+                text: userText,
                 sender: 'user',
                 timestamp: new Date(),
             };
 
+            // ✅ Exibe a mensagem do usuário imediatamente
+            state.messages.push(newMessage);
+            state.input = '';
+            await nextTick();
+            textAreaRef.value?.focus();
+
             try {
                 state.loading = true;
                 const textUrl = import.meta.env.VITE_API_TEXT_URL;
-                state.response = await axios.post(
+                const res = await axios.post(
                     `${textUrl}/inference/`,
                     {
-                        prompt: state.input,
+                        prompt: userText,
                         session_id: state.session_id,
                     },
                     {
@@ -71,18 +79,15 @@ export const actions = {
                     }
                 );
 
-                const botResponse = state.response.data.resposta;
+                const botResponse = res.data.resposta;
 
-                state.messages.push(newMessage, {
-                    id: state.messages.length + 2,
+                state.messages.push({
+                    id: state.messages.length + 1,
                     text: botResponse,
                     sender: 'bot',
                     timestamp: new Date(),
                 });
 
-                await nextTick();
-                state.input = '';
-                textAreaRef.value?.focus();
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
@@ -111,13 +116,24 @@ export const actions = {
 
                 if (audioBlob.size === 0) return;
 
-                // Libera o microfone aqui
+                // Libera o microfone
                 const tracks = state.mediaRecorder?.stream?.getTracks?.();
                 tracks?.forEach(track => track.stop());
 
                 const formData = new FormData();
                 formData.append("audio", audioBlob);
                 formData.append("session_id", state.idChat);
+
+                const userAudioUrl = URL.createObjectURL(audioBlob); // ⚠️ temporário, pode trocar pelo da API depois
+
+                // ✅ Adiciona a mensagem do usuário com o áudio **antes de enviar**
+                state.messages.push({
+                    id: state.messages.length + 1,
+                    text: "",
+                    sender: "user",
+                    timestamp: new Date(),
+                    audioUrl: userAudioUrl,
+                });
 
                 try {
                     state.loadingAudio = true;
@@ -133,18 +149,9 @@ export const actions = {
 
                     const resposta = res.data.resposta;
                     const ttsUrl = res.data.tts_audio_url;
-                    const userAudioUrl = res.data.user_audio_url;
 
                     state.messages.push({
                         id: state.messages.length + 1,
-                        text: "",
-                        sender: "user",
-                        timestamp: new Date(),
-                        audioUrl: userAudioUrl,
-                    });
-
-                    state.messages.push({
-                        id: state.messages.length + 2,
                         text: resposta,
                         sender: "bot",
                         timestamp: new Date(),
@@ -159,6 +166,7 @@ export const actions = {
                     state.chunks = [];
                 }
             };
+
 
             state.mediaRecorder.start();
             state.isRecording = true;
