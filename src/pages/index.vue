@@ -304,7 +304,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   position: relative;
   max-width: 80%;
   padding: 0.8rem 1rem;
-  border-radius: 28px;
+  border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
   word-wrap: break-word;
