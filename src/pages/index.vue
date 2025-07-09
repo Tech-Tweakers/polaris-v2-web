@@ -19,15 +19,16 @@ declare global {
 const renderMarkdown = (text: string = "") => {
   const trimmed = text.trim();
 
-  // Força o uso de <p> mesmo em textos simples
-  const fallback = `<p>${trimmed.replace(/\n/g, "<br>")}</p>`;
+  // Força \n simples a virarem \n\n para separação de parágrafos
+  const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
 
-  // Se tiver algo com cara de markdown, usa o marked mesmo
-  if (/[*_`#>\[\]]/.test(trimmed)) {
-    return marked.parse(trimmed);
+  // Se tiver algo com cara de markdown, usa o marked
+  if (/[*_`#>\[\]]/.test(normalized)) {
+    return marked.parse(normalized);
   }
 
-  return fallback;
+  // Fallback básico
+  return `<p>${normalized.replace(/\n/g, "<br>")}</p>`;
 };
 
 
@@ -36,18 +37,14 @@ marked.use({
     code({ text, lang }: { text: string; lang?: string }) {
       const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
       const highlighted = hljs.highlight(text, { language: validLang }).value;
-
-      const escapedText = text
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-
-      const codeId = `code-${Math.random().toString(36).substr(2, 9)}`;
+      const codeId = `code-${Math.random().toString(36).slice(2, 8)}`;
 
       return `
         <div class="code-block-wrapper">
-          <button class="copy-button" data-target="${codeId}">📋</button>
-          <pre><code id="${codeId}" class="hljs ${validLang}">${highlighted}</code></pre>
+          <pre>
+            <div class="copy-hint" data-target="${codeId}">copiar código</div>
+            <code id="${codeId}" class="hljs ${validLang}">${highlighted}</code>
+          </pre>
         </div>
       `;
     },
@@ -121,7 +118,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
-    if (target.classList.contains("copy-button")) {
+    if (target.classList.contains("copy-hint")) {
       const codeId = target.getAttribute("data-target");
       const codeEl = document.getElementById(codeId ?? "");
       if (codeEl) {
@@ -223,9 +220,9 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 
       </div>
 
-      <div class="d-flex justify-center align-center flex-column">
+      <!-- <div class="d-flex justify-center align-center flex-column">
         <p class="text-caption">© Tech-Tweakers 2025</p>
-      </div>
+      </div> -->
 
       <v-overlay
         :model-value="state.loading"
@@ -303,7 +300,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   text-align: left;
   position: relative;
   max-width: 100%;
-  width: 100%;
+  width: auto;
   word-break: break-word;
   overflow-wrap: break-word;
   box-sizing: border-box;
@@ -553,28 +550,28 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   }
 }
 
-.copy-button {
+.copy-hint {
   position: absolute;
-  max-width: 100%;
-  white-space: nowrap;
-  top: 8px;
-  right: 8px;
-  background: #333;
-  color: #fff;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  z-index: 2;
-  transition: background 0.2s ease-in-out, transform 0.2s ease;
+  top: 6px;
+  right: 10px;
+  font-size: 0.65rem;
+  color: #ccc;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  cursor: pointer;
+  z-index: 5;
+  user-select: none;
 }
 
-.code-block-wrapper:hover .copy-button {
+.code-block-wrapper:hover .copy-hint {
   opacity: 1;
   pointer-events: auto;
+}
+
+.copy-hint:hover {
+  text-decoration: underline;
+  color: #fff;
 }
 
 
