@@ -314,7 +314,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 .user-message {
   align-self: flex-end;
   background-color: #003f47;
-  color: #d1faff;
+  color: #fff;
   border-bottom-right-radius: 4px;
 
   &::after {
