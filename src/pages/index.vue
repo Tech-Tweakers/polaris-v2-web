@@ -345,12 +345,24 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 
 .textArea {
   background-color: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(2px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
   padding: 1rem;
   flex-shrink: 0;
-  font-size: 1rem !important;
-  border-radius: 20px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: var(--font-message);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  min-height: 50px;
 }
 
 .input-bloqueado input {
@@ -404,7 +416,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 }
 
 .pulse-on-record {
-  background-color: #b71c1c !important;
+  background-color: #003f47 !important;
   animation: pulse 1.2s infinite ease-in-out;
 }
 
