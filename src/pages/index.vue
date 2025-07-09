@@ -10,6 +10,12 @@ marked.setOptions({
   breaks: true,
 });
 
+declare global {
+  interface Window {
+    __copyHandlerAdded?: boolean;
+  }
+}
+
 const renderMarkdown = (text: string = "") => {
   const trimmed = text.trim();
 
@@ -30,9 +36,22 @@ marked.use({
     code({ text, lang }: { text: string; lang?: string }) {
       const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
       const highlighted = hljs.highlight(text, { language: validLang }).value;
-      return `<pre><code class="hljs ${validLang}">${highlighted}</code></pre>`;
-    }
-  }
+
+      const escapedText = text
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+      const codeId = `code-${Math.random().toString(36).substr(2, 9)}`;
+
+      return `
+        <div class="code-block-wrapper">
+          <button class="copy-button" data-target="${codeId}">📋</button>
+          <pre><code id="${codeId}" class="hljs ${validLang}">${highlighted}</code></pre>
+        </div>
+      `;
+    },
+  },
 });
 
 const chatContainer = ref<HTMLElement | null>(null);
@@ -97,6 +116,26 @@ const handleEnter = (event: KeyboardEvent) => {
   }
 };
 
+if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
+  window.__copyHandlerAdded = true;
+
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("copy-button")) {
+      const codeId = target.getAttribute("data-target");
+      const codeEl = document.getElementById(codeId ?? "");
+      if (codeEl) {
+        const textToCopy = codeEl.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          target.innerText = "✅";
+          setTimeout(() => (target.innerText = "📋"), 1500);
+        });
+      }
+    }
+  });
+}
+
+
 </script>
 
 <template>
@@ -128,8 +167,7 @@ const handleEnter = (event: KeyboardEvent) => {
         >
           <div>
             <template v-if="message.text && !message.audioUrl">
-              <span class="ml-2" v-html="renderMarkdown(message.text)"></span>
-
+              <div class="ml-2" v-html="renderMarkdown(message.text)"></div>
               <div class="timestamp">
                 {{ formatTimestamp(message.timestamp) }}
               </div>
@@ -415,17 +453,20 @@ const handleEnter = (event: KeyboardEvent) => {
   border-radius: 6px;
   overflow-x: auto;
   max-width: 100%;
-  font-size: 0.95rem;
-  white-space: pre;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
   word-break: break-word;
+  box-sizing: border-box;
 }
 
 .bot-message code {
   font-family: 'Fira Code', monospace;
+  font-size: inherit;
   display: block;
-  line-height: 1.5;
-  white-space: pre;
+  line-height: 1.4;
   background: transparent;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .bot-message a {
@@ -464,5 +505,57 @@ const handleEnter = (event: KeyboardEvent) => {
   content: "";
   margin-bottom: 0.5rem;
 }
+
+.code-block-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+
+  pre {
+    background: #222;
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  code {
+    font-family: 'Fira Code', monospace;
+    font-size: inherit;
+    display: block;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  z-index: 2;
+  transition: background 0.2s ease-in-out, transform 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.code-block-wrapper:hover .copy-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
 
 </style>
