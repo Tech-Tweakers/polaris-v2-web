@@ -302,7 +302,11 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   align-items: flex-start;
   text-align: left;
   position: relative;
-  max-width: 80%;
+  max-width: 100%;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
   padding: 0.8rem 1rem;
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
@@ -441,8 +445,8 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 
 @media (max-width: 600px) {
   .chat-container {
-    padding: 0.5rem 1rem;
-    padding-top: 40px;
+    padding: 1rem 1rem;
+    max-width: 100%;
   }
 
   .user-message,
@@ -464,10 +468,11 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   padding: 0.75rem;
   border-radius: 6px;
   overflow-x: auto;
-  max-width: 100%;
   font-size: 0.75rem;
   white-space: pre-wrap;
+  word-wrap: break-word;
   word-break: break-word;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -531,9 +536,10 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
     overflow-x: auto;
     font-size: 0.75rem;
     white-space: pre-wrap;
-    word-break: break-word;
     box-sizing: border-box;
     max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word; 
   }
 
   code {
@@ -542,12 +548,15 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
     display: block;
     line-height: 1.4;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
     word-break: break-word;
   }
 }
 
 .copy-button {
   position: absolute;
+  max-width: 100%;
+  white-space: nowrap;
   top: 8px;
   right: 8px;
   background: #333;
