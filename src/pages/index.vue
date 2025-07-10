@@ -4,11 +4,9 @@ import { actions, state } from "./polaris";
 
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark.css'; // ou o tema que preferir
+import 'highlight.js/styles/atom-one-dark.css';
 
-marked.setOptions({
-  breaks: true,
-});
+marked.setOptions({ breaks: true });
 
 declare global {
   interface Window {
@@ -18,19 +16,10 @@ declare global {
 
 const renderMarkdown = (text: string = "") => {
   const trimmed = text.trim();
-
-  // Força \n simples a virarem \n\n para separação de parágrafos
   const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
 
-  // Se tiver algo com cara de markdown, usa o marked
-  if (/[*_`#>\[\]]/.test(normalized)) {
-    return marked.parse(normalized);
-  }
-
-  // Fallback básico
-  return `<p>${normalized.replace(/\n/g, "<br>")}</p>`;
+  return marked.parse(normalized);
 };
-
 
 marked.use({
   renderer: {
@@ -40,39 +29,39 @@ marked.use({
       const codeId = `code-${Math.random().toString(36).slice(2, 8)}`;
 
       return `
+        <div style="margin-top: 1rem;"></div>
         <div class="code-block-wrapper">
-          <pre>
-            <div class="copy-hint" data-target="${codeId}">copiar código</div>
-            <code id="${codeId}" class="hljs ${validLang}">${highlighted}</code>
-          </pre>
+          <pre><code id="${codeId}" class="hljs ${validLang}">${highlighted}</code></pre>
+          <div class="copy-hint" data-target="${codeId}">copiar código</div>
         </div>
+        <div style="margin-bottom: 1rem;"></div>
       `;
+
     },
   },
 });
 
+
+if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
+  window.__copyHandlerAdded = true;
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("copy-hint")) {
+      const codeId = target.getAttribute("data-target");
+      const codeEl = document.getElementById(codeId ?? "");
+      if (codeEl) {
+        const textToCopy = codeEl.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          target.innerText = "copiado!";
+          setTimeout(() => (target.innerText = "copiar código"), 1500);
+        });
+      }
+    }
+  });
+}
+
 const chatContainer = ref<HTMLElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-
-const handleDynamicButton = () => {
-  if (state.input?.trim()) {
-    actions.enviarMsg();
-  } else {
-    actions.toggleRecording();
-  }
-};
-
-const formatTimestamp = (ts: string | Date) => {
-  const date = typeof ts === "string" ? new Date(ts) : ts;
-
-  const dia = String(date.getDate()).padStart(2, "0");
-  const mes = String(date.getMonth() + 1).padStart(2, "0");
-  const horas = date.getHours().toString().padStart(2, "0");
-  const minutos = date.getMinutes().toString().padStart(2, "0");
-
-  return `${dia}/${mes} - ${horas}:${minutos}`;
-};
-
 
 const scrollToBottom = () => {
   if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -88,15 +77,17 @@ watch(
   async () => {
     await nextTick();
     const lastMessage = state.messages[state.messages.length - 1];
-    if (lastMessage?.sender === "bot") {
-      scrollToBottom();
-    }
+    if (lastMessage?.sender === "bot") scrollToBottom();
   }
 );
 
+const handleDynamicButton = () => {
+  if (state.input?.trim()) actions.enviarMsg();
+  else actions.toggleRecording();
+};
+
 const handleEnter = (event: KeyboardEvent) => {
   if (event.shiftKey || event.metaKey) {
-    // Ctrl + Enter (ou Cmd + Enter no Mac) → ignora, insere quebra de linha
     const target = event.target as HTMLInputElement;
     const cursorPos = target.selectionStart ?? state.input.length;
     state.input =
@@ -105,35 +96,23 @@ const handleEnter = (event: KeyboardEvent) => {
       target.selectionStart = target.selectionEnd = cursorPos + 1;
     });
   } else {
-    // Enter simples → envia
     event.preventDefault();
     actions.enviarMsg();
     scrollToBottom();
-
   }
 };
 
-if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
-  window.__copyHandlerAdded = true;
+const formatTimestamp = (ts: string | Date) => {
+  const date = typeof ts === "string" ? new Date(ts) : ts;
+  const dia = String(date.getDate()).padStart(2, "0");
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const horas = date.getHours().toString().padStart(2, "0");
+  const minutos = date.getMinutes().toString().padStart(2, "0");
 
-  document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("copy-hint")) {
-      const codeId = target.getAttribute("data-target");
-      const codeEl = document.getElementById(codeId ?? "");
-      if (codeEl) {
-        const textToCopy = codeEl.innerText;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          target.innerText = "✅";
-          setTimeout(() => (target.innerText = "📋"), 1500);
-        });
-      }
-    }
-  });
-}
-
-
+  return `${dia}/${mes} - ${horas}:${minutos}`;
+};
 </script>
+
 
 <template>
   <v-app>
@@ -267,7 +246,6 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   font-weight: 600;
 }
 
-
 .main-layout {
   display: flex;
   flex-direction: column;
@@ -302,14 +280,12 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   max-width: 100%;
   width: auto;
   word-break: break-word;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   box-sizing: border-box;
   padding: 0.8rem 1rem;
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
-  word-wrap: break-word;
-  word-break: break-word;
 }
 
 .user-message {
@@ -440,6 +416,81 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   }
 }
 
+.message p {
+  margin: 0 0 0.75rem;
+  padding: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message br {
+  display: block;
+  content: "";
+  margin-bottom: 0.5rem;
+}
+
+.message .ml-2 {
+  display: block;
+  width: auto;
+}
+
+.bot-message a {
+  color: #42a5f5;
+  text-decoration: underline;
+}
+
+.code-block-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+
+  pre {
+    background: #222;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0;
+  }
+
+  code {
+    font-family: 'Fira Code', monospace;
+    font-size: inherit;
+    display: block;
+    line-height: 1.4;
+    background: transparent;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.copy-hint {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  color: #aaa;
+  text-align: right;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease-in-out;
+
+  &:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+
+.code-block-wrapper:hover .copy-hint {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 @media (max-width: 600px) {
   .chat-container {
     padding: 1rem 1rem;
@@ -458,122 +509,14 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
   .textArea {
     padding: 0.4rem 0.8rem;
   }
-}
 
-.bot-message pre {
-  background: #222;
-  padding: 0.75rem;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-size: 0.75rem;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  word-break: break-word;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.bot-message code {
-  font-family: 'Fira Code', monospace;
-  font-size: inherit;
-  display: block;
-  line-height: 1.4;
-  background: transparent;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.bot-message a {
-  color: #42a5f5;
-  text-decoration: underline;
-}
-
-.message p {
-  margin: 0;
-  padding: 0;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.message span.ml-2 {
-  display: block;
-  width: 100%;
-}
-
-.bot-message pre::-webkit-scrollbar {
-  height: 6px;
-}
-
-.bot-message pre::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.bot-message pre::-webkit-scrollbar-thumb {
-  background-color: #444;
-  border-radius: 3px;
-}
-
-.message br {
-  display: block;
-  content: "";
-  margin-bottom: 0.5rem;
-}
-
-.code-block-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  margin-top: 0.5rem;
-
-  pre {
-    background: #222;
-    padding: 0.75rem;
-    border-radius: 6px;
-    overflow-x: auto;
-    font-size: 0.75rem;
-    white-space: pre-wrap;
-    box-sizing: border-box;
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-break: break-word; 
+  .code-block-wrapper pre {
+    font-size: 0.65rem;
   }
 
-  code {
-    font-family: 'Fira Code', monospace;
-    font-size: inherit;
-    display: block;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-break: break-word;
+  .copy-hint {
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 }
-
-.copy-hint {
-  position: absolute;
-  top: 6px;
-  right: 10px;
-  font-size: 0.65rem;
-  color: #ccc;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease-in-out;
-  cursor: pointer;
-  z-index: 5;
-  user-select: none;
-}
-
-.code-block-wrapper:hover .copy-hint {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.copy-hint:hover {
-  text-decoration: underline;
-  color: #fff;
-}
-
-
-
 </style>
