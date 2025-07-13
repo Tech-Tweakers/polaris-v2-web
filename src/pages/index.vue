@@ -119,7 +119,7 @@ const formatTimestamp = (ts: string | Date) => {
     <v-main class="main-layout header">
       <v-app-bar app flat height="42" class="app-bar">
         <div class="titulo-barra">
-          <img width="35" class="logo" src="../assets/icon.png" alt="logo" />
+          <img width="30" class="logo" src="../assets/icon.png" alt="logo" />
           <span class="titulo-texto">Polaris v2</span>
         </div>
         <v-spacer />
@@ -241,7 +241,7 @@ const formatTimestamp = (ts: string | Date) => {
   align-items: center;
   gap: 12px;
   width: 60%;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   margin-bottom: -8px;
   font-weight: 600;
 }
@@ -264,7 +264,7 @@ const formatTimestamp = (ts: string | Date) => {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 1rem 2rem;
-  padding-top: 35px;
+  padding-top: 3rem;
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
@@ -277,7 +277,7 @@ const formatTimestamp = (ts: string | Date) => {
   align-items: flex-start;
   text-align: left;
   position: relative;
-  max-width: 100%;
+  max-width: 70%;
   width: auto;
   word-break: break-word;
   overflow-wrap: anywhere;
