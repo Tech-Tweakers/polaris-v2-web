@@ -95,6 +95,7 @@ const handleEnter = (event: KeyboardEvent) => {
     nextTick(() => {
       target.selectionStart = target.selectionEnd = cursorPos + 1;
     });
+  scrollToBottom();
   } else {
     event.preventDefault();
     actions.enviarMsg();
