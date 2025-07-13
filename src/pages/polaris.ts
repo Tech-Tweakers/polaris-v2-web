@@ -139,13 +139,17 @@ export const actions = {
                     state.loadingAudio = true;
                     const audioUrl = import.meta.env.VITE_API_AUDIO_URL;
                     const res = await axios.post(
-                        `${audioUrl}/audio-inference/`,
-                        formData,
-                        {
-                            headers: { "Content-Type": "multipart/form-data" },
-                            timeout: 9999999,
+                    `${audioUrl}/audio-inference/`,
+                    formData,
+                    {
+                        headers: { "Content-Type": "multipart/form-data" },
+                        timeout: 9999999,
+                        onDownloadProgress: () => {
+                        console.log("📥 Backend ainda respondendo...");
                         }
+                    }
                     );
+
 
                     const resposta = res.data.resposta;
                     const ttsUrl = res.data.tts_audio_url;
