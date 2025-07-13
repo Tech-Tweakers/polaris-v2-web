@@ -277,7 +277,7 @@ const formatTimestamp = (ts: string | Date) => {
   align-items: flex-start;
   text-align: left;
   position: relative;
-  max-width: 70%;
+  max-width: 80%;
   width: auto;
   word-break: break-word;
   overflow-wrap: anywhere;
