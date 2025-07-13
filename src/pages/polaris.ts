@@ -75,7 +75,7 @@ export const actions = {
                     },
                     {
                         headers: { 'content-type': 'application/json' },
-                        timeout: 60000,
+                        timeout: 90000,
                     }
                 );
 
@@ -143,7 +143,7 @@ export const actions = {
                         formData,
                         {
                             headers: { "Content-Type": "multipart/form-data" },
-                            timeout: 0,
+                            timeout: 9999999,
                         }
                     );
 
