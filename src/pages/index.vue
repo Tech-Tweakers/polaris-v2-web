@@ -343,6 +343,7 @@ const formatTimestamp = (ts: string | Date) => {
   color: #aaa;
   margin-top: 4px;
   text-align: right !important;
+  align-self: flex-end; // <- ESSENCIAL!
   opacity: 0.4;
 }
 
