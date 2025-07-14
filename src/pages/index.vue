@@ -14,6 +14,20 @@ declare global {
   }
 }
 
+const handleCopyClick = (e: Event) => {
+  const target = e.currentTarget as HTMLElement;
+  const codeId = target.getAttribute("data-target");
+  const codeEl = document.getElementById(codeId ?? "");
+  if (codeEl) {
+    const textToCopy = codeEl.innerText;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      target.innerText = "copiado!";
+      setTimeout(() => (target.innerText = "copiar código"), 1500);
+    });
+  }
+};
+
+
 const renderMarkdown = (text: string = "") => {
   const trimmed = text.trim();
   const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
@@ -76,9 +90,13 @@ watch(
   () => state.messages.length,
   async () => {
     await nextTick();
-    const lastMessage = state.messages[state.messages.length - 1];
-    //if (lastMessage?.sender === "bot") scrollToBottom();
-    scrollToBottom()
+    scrollToBottom();
+
+    // Adiciona eventos de copiar código
+    document.querySelectorAll(".copy-hint").forEach((el) => {
+      el.removeEventListener("click", handleCopyClick); // evita duplicidade
+      el.addEventListener("click", handleCopyClick);
+    });
   }
 );
 
