@@ -14,20 +14,6 @@ declare global {
   }
 }
 
-const handleCopyClick = (e: Event) => {
-  const target = e.currentTarget as HTMLElement;
-  const codeId = target.getAttribute("data-target");
-  const codeEl = document.getElementById(codeId ?? "");
-  if (codeEl) {
-    const textToCopy = codeEl.innerText;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      target.innerText = "copiado!";
-      setTimeout(() => (target.innerText = "copiar código"), 1500);
-    });
-  }
-};
-
-
 const renderMarkdown = (text: string = "") => {
   const trimmed = text.trim();
   const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
@@ -37,23 +23,20 @@ const renderMarkdown = (text: string = "") => {
 
 marked.use({
   renderer: {
-    code({ text, lang }: { text: string; lang?: string }) {
+    code({ text, lang }) {
       const validLang = lang && hljs.getLanguage(lang) ? lang : "plaintext";
       const highlighted = hljs.highlight(text, { language: validLang }).value;
       const codeId = `code-${Math.random().toString(36).slice(2, 8)}`;
 
       return `
-        <div style="margin-top: 1rem;"></div>
         <div class="code-block-wrapper">
           <pre><code id="${codeId}" class="hljs ${validLang}">${highlighted}</code></pre>
-          <div class="copy-hint" data-target="${codeId}">copiar código</div>
         </div>
-        <div style="margin-bottom: 1rem;"></div>
       `;
-
-    },
-  },
+    }
+  }
 });
+
 
 
 if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
@@ -90,13 +73,9 @@ watch(
   () => state.messages.length,
   async () => {
     await nextTick();
-    scrollToBottom();
-
-    // Adiciona eventos de copiar código
-    document.querySelectorAll(".copy-hint").forEach((el) => {
-      el.removeEventListener("click", handleCopyClick); // evita duplicidade
-      el.addEventListener("click", handleCopyClick);
-    });
+    const lastMessage = state.messages[state.messages.length - 1];
+    //if (lastMessage?.sender === "bot") scrollToBottom();
+    scrollToBottom()
   }
 );
 
@@ -143,12 +122,6 @@ const formatTimestamp = (ts: string | Date) => {
           <span class="titulo-texto">Polaris v2</span>
         </div>
         <v-spacer />
-        <!-- <v-btn
-          @click="globalActions.toggleTheme()"
-          variant="text"
-          color="primary"
-          icon="mdi-theme-light-dark"
-        /> -->
       </v-app-bar>
 
       <div class="chat-container" ref="chatContainer">
@@ -161,26 +134,20 @@ const formatTimestamp = (ts: string | Date) => {
             'bot-message': message.sender === 'bot',
           }"
         >
-          <div>
-            <template v-if="message.text && !message.audioUrl">
-              <div class="ml-2" v-html="renderMarkdown(message.text)"></div>
-              <div class="timestamp">
-                {{ formatTimestamp(message.timestamp) }}
-              </div>
-            </template>
-            <template v-if="message.audioUrl">
-              <div style="margin-top: 8px">
-                <audio :src="message.audioUrl" controls class="audio-player" />
-              </div>
-              <div class="timestamp">
-                {{ formatTimestamp(message.timestamp) }}
-              </div>
-            </template>
+          <!-- tudo dentro do balão -->
+          <template v-if="message.text && !message.audioUrl">
+            <div class="message-content" v-html="renderMarkdown(message.text)"></div>
+          </template>
 
-            <template v-if="!message.text && !message.audioUrl">
-              <em class="ml-2">⚠️ Mensagem vazia?</em>
-            </template>
-          </div>
+          <template v-if="message.audioUrl">
+            <audio :src="message.audioUrl" controls class="audio-player" />
+          </template>
+
+          <template v-if="!message.text && !message.audioUrl">
+            <em>⚠️ Mensagem vazia?</em>
+          </template>
+
+          <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
         </div>
       </div>
 
@@ -216,12 +183,7 @@ const formatTimestamp = (ts: string | Date) => {
             }}
           </v-icon>
         </v-btn>
-
       </div>
-
-      <!-- <div class="d-flex justify-center align-center flex-column">
-        <p class="text-caption">© Tech-Tweakers 2025</p>
-      </div> -->
 
       <v-overlay
         :model-value="state.loading"
@@ -294,13 +256,13 @@ const formatTimestamp = (ts: string | Date) => {
   font-size: 1rem;
   line-height: 1.5;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   text-align: left;
   position: relative;
   max-width: 80%;
-  width: auto;
   word-break: break-word;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   box-sizing: border-box;
   padding: 0.8rem 1rem;
   border-radius: 20px;
@@ -380,12 +342,12 @@ const formatTimestamp = (ts: string | Date) => {
   font-size: 0.6rem;
   color: #aaa;
   margin-top: 4px;
-  text-align: right;
+  text-align: left !important;
   opacity: 0.4;
 }
 
 .user-message .timestamp {
-  text-align: right;
+  text-align: left !important;
 }
 
 .v-btn {
@@ -451,8 +413,17 @@ const formatTimestamp = (ts: string | Date) => {
 }
 
 .message .ml-2 {
-  display: block;
-  width: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 100%; // ← ESSA É A CHAVE!
+  overflow-x: hidden; // ← evita qualquer escapamento
+}
+
+
+.message .ml-2 > * {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .bot-message a {
@@ -461,32 +432,23 @@ const formatTimestamp = (ts: string | Date) => {
 }
 
 .code-block-wrapper {
-  position: relative;
-  width: 100%;
+  overflow-x: auto;
   max-width: 100%;
-  margin-top: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
 
   pre {
-    background: #222;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
+    white-space: pre;
+    font-size: 0.85rem;
     overflow-x: auto;
-    font-size: 0.75rem;
-    white-space: pre-wrap;
-    word-break: break-word;
-    box-sizing: border-box;
-    position: relative;
-    margin: 0;
+    background-color: #222;
+    border-radius: 8px;
+    padding: 1rem;
   }
 
   code {
-    font-family: 'Fira Code', monospace;
-    font-size: inherit;
-    display: block;
-    line-height: 1.4;
-    background: transparent;
-    white-space: pre-wrap;
-    word-break: break-word;
+    white-space: pre;
+    font-size: 0.85rem !important;
   }
 }
 
@@ -494,7 +456,7 @@ const formatTimestamp = (ts: string | Date) => {
   margin-top: 4px;
   font-size: 0.7rem;
   color: #aaa;
-  text-align: right;
+  text-align: left;
   cursor: pointer;
   user-select: none;
   transition: color 0.2s ease-in-out;
@@ -531,12 +493,52 @@ const formatTimestamp = (ts: string | Date) => {
   }
 
   .code-block-wrapper pre {
-    font-size: 0.65rem;
+    background: #222;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-size: 0.75rem !important;
+    line-height: 1.4;
+    white-space: pre;
+    box-sizing: border-box;
+    margin: 0;
+    max-width: 100%;
   }
+
+  .code-block-wrapper code {
+  font-family: 'Fira Code', monospace;
+  line-height: 1.4;
+  font-size: 0.4rem; // ou 0.8rem se quiser mais compacto
+  display: inline-block;
+  line-height: 1.4;
+  background: transparent;
+  white-space: pre;
+}
 
   .copy-hint {
     opacity: 1 !important;
     pointer-events: auto !important;
   }
 }
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  overflow-x: auto;
+  word-break: break-word;
+}
+
+.message.bot-message {
+  max-width: 80%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+}
+
+
 </style>
