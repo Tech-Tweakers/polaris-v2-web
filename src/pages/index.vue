@@ -494,7 +494,7 @@ const formatTimestamp = (ts: string | Date) => {
 
 @media (max-width: 600px) {
   .chat-container {
-    padding: 1rem 1rem;
+    padding: 3rem 1rem 1rem 1rem; // top, right, bottom, left
     max-width: 100%;
   }
 
