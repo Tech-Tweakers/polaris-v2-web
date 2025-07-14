@@ -342,12 +342,12 @@ const formatTimestamp = (ts: string | Date) => {
   font-size: 0.6rem;
   color: #aaa;
   margin-top: 4px;
-  text-align: left !important;
+  text-align: right !important;
   opacity: 0.4;
 }
 
 .user-message .timestamp {
-  text-align: left !important;
+  text-align: right !important;
 }
 
 .v-btn {
