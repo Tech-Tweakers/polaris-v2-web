@@ -77,7 +77,8 @@ watch(
   async () => {
     await nextTick();
     const lastMessage = state.messages[state.messages.length - 1];
-    if (lastMessage?.sender === "bot") scrollToBottom();
+    //if (lastMessage?.sender === "bot") scrollToBottom();
+    scrollToBottom()
   }
 );
 
