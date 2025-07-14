@@ -1,0 +1,1 @@
+import{_ as o,c as n,w as r,r as s,o as a,a as c}from"./index-BszOvQa8.js";const _={};function f(l,e){const t=s("H1");return a(),n(t,null,{default:r(()=>e[0]||(e[0]=[c("rota teste")])),_:1,__:[0]})}const p=o(_,[["render",f]]);export{p as default};
