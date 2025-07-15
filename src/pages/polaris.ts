@@ -7,15 +7,16 @@ const generateSessionId = () => {
 };
 
 const getSessionId = () => {
-    const sessionId = localStorage.getItem('session_id');
+    const sessionId = sessionStorage.getItem('session_id');
     if (sessionId) {
         return sessionId;
     } else {
         const newSessionId = generateSessionId();
-        localStorage.setItem('session_id', newSessionId);
+        sessionStorage.setItem('session_id', newSessionId);
         return newSessionId;
     }
 };
+
 
 const session_id = getSessionId();
 
