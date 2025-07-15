@@ -183,29 +183,36 @@ export const actions = {
     },
 
     checkPendingResponse() {
-    const textUrl = import.meta.env.VITE_API_TEXT_URL;
-    axios
-        .get(`${textUrl}/inference/pending-response/${state.session_id}`)
-        .then((res) => {
-        if (
-        res.data?.resposta &&
-        !state.messages.some((msg) => msg.text === res.data.resposta && msg.sender === 'bot')
-        ) {
-        state.messages.push({
-            id: state.messages.length + 1,
-            text: res.data.resposta,
-            sender: 'bot',
-            timestamp: new Date(),
-        });
-        }
-        })
-        .catch((err) => {
-        console.warn("⚠️ Erro ao verificar resposta pendente:", err);
-        });
+        const textUrl = import.meta.env.VITE_API_TEXT_URL;
+        axios
+            .get(`${textUrl}/inference/pending-response/${state.session_id}`)
+            .then((res) => {
+                if (res.data?.resposta) {
+                    // 🧼 Limpa o prefixo de session_id, se existir
+                    const cleanText = res.data.resposta.replace(/^\[session_id=.*?\]\n?/, '');
+
+                    // ✅ Evita mensagens duplicadas com base no conteúdo limpo
+                    const jaTem = state.messages.some(
+                        (msg) => msg.text === cleanText && msg.sender === 'bot'
+                    );
+
+                    if (!jaTem) {
+                        state.messages.push({
+                            id: state.messages.length + 1,
+                            text: cleanText,
+                            sender: 'bot',
+                            timestamp: new Date(),
+                        });
+                    }
+                }
+            })
+            .catch((err) => {
+                console.warn("⚠️ Erro ao verificar resposta pendente:", err);
+            });
     }
 };
 export default { state, actions };
 
-setInterval(() => {
-    actions.checkPendingResponse();
-}, 2000); // verifica a cada 2 segundos
+// setInterval(() => {
+//     actions.checkPendingResponse();
+// }, 2000); // verifica a cada 2 segundos
