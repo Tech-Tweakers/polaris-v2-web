@@ -123,7 +123,7 @@ export const actions = {
 
                 const formData = new FormData();
                 formData.append("audio", audioBlob);
-                formData.append("session_id", state.idChat);
+                formData.append("session_id", state.session_id);
 
                 const userAudioUrl = URL.createObjectURL(audioBlob); // ⚠️ temporário, pode trocar pelo da API depois
 
@@ -187,13 +187,16 @@ export const actions = {
     axios
         .get(`${textUrl}/inference/pending-response/${state.session_id}`)
         .then((res) => {
-        if (res.data?.resposta) {
-            state.messages.push({
+        if (
+        res.data?.resposta &&
+        !state.messages.some((msg) => msg.text === res.data.resposta && msg.sender === 'bot')
+        ) {
+        state.messages.push({
             id: state.messages.length + 1,
             text: res.data.resposta,
             sender: 'bot',
             timestamp: new Date(),
-            });
+        });
         }
         })
         .catch((err) => {
