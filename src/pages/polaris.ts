@@ -180,7 +180,29 @@ export const actions = {
                 state.mediaRecorder.stop();
             }
         }
+    },
+
+    checkPendingResponse() {
+    const textUrl = import.meta.env.VITE_API_TEXT_URL;
+    axios
+        .get(`${textUrl}/inference/pending-response/${state.session_id}`)
+        .then((res) => {
+        if (res.data?.resposta) {
+            state.messages.push({
+            id: state.messages.length + 1,
+            text: res.data.resposta,
+            sender: 'bot',
+            timestamp: new Date(),
+            });
+        }
+        })
+        .catch((err) => {
+        console.warn("⚠️ Erro ao verificar resposta pendente:", err);
+        });
     }
 };
-
 export default { state, actions };
+
+setInterval(() => {
+    actions.checkPendingResponse();
+}, 2000); // verifica a cada 2 segundos
