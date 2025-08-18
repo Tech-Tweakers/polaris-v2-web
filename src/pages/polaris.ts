@@ -2,24 +2,22 @@ import { nextTick, reactive, ref } from 'vue';
 import axios from 'axios';
 import { iMensagem } from '../interfaces/interfacePolaris';
 
-// Função para gerar session_id aleatório
 const generateSessionId = () => {
-    return Math.random().toString(36).substring(2, 15); // Gera uma string aleatória
+    return Math.random().toString(36).substring(2, 15);
 };
 
-// Recuperar session_id do localStorage ou gerar um novo se não existir
 const getSessionId = () => {
-    const sessionId = localStorage.getItem('session_id');
+    const sessionId = sessionStorage.getItem('session_id');
     if (sessionId) {
         return sessionId;
     } else {
         const newSessionId = generateSessionId();
-        localStorage.setItem('session_id', newSessionId);
+        sessionStorage.setItem('session_id', newSessionId);
         return newSessionId;
     }
 };
 
-// Armazenando o session_id no localStorage ao iniciar
+
 const session_id = getSessionId();
 
 export const state = reactive({
@@ -28,17 +26,17 @@ export const state = reactive({
     messages: <iMensagem[]>([
         {
             id: 1,
-            text: "Olá, em que posso ajudar? 😊",
+            text: "Olá, em que posso ajudar?",
             sender: 'bot',
             timestamp: new Date()
         }
-    ]), // Mensagem inicial da Polaris
+    ]),
     response: <any>null,
     inputDisabled: false,
     idChat: (Math.random() + 1).toString(36).substring(7),
     userAvatarSrc: 'src/assets/user.png',
     botAvatarSrc: 'src/assets/bot.png',
-    session_id: session_id, // Usando o session_id recuperado ou gerado,
+    session_id: session_id,
     isRecording: false,
     loadingAudio: false,
     mediaRecorder: null as MediaRecorder | null,
@@ -52,41 +50,45 @@ export const actions = {
     async enviarMsg() {
         if (state.input?.trim()) {
             state.inputDisabled = true;
+
+            const userText = state.input.trim();
             const newMessage: iMensagem = {
                 id: state.messages.length + 1,
-                text: state.input,
+                text: userText,
                 sender: 'user',
                 timestamp: new Date(),
             };
 
+            // ✅ Exibe a mensagem do usuário imediatamente
+            state.messages.push(newMessage);
+            state.input = '';
+            await nextTick();
+            textAreaRef.value?.focus();
+
             try {
                 state.loading = true;
-                //const inputBackup = state.input;
                 const textUrl = import.meta.env.VITE_API_TEXT_URL;
-                state.response = await axios.post(
+                const res = await axios.post(
                     `${textUrl}/inference/`,
                     {
-                        prompt: state.input,
-                        session_id: state.session_id, // Passando o session_id armazenado
+                        prompt: userText,
+                        session_id: state.session_id,
                     },
                     {
                         headers: { 'content-type': 'application/json' },
-                        timeout: 60000,
+                        timeout: 90000,
                     }
                 );
 
-                const botResponse = state.response.data.resposta;
+                const botResponse = res.data.resposta;
 
-                state.messages.push(newMessage, {
-                    id: state.messages.length + 2,
+                state.messages.push({
+                    id: state.messages.length + 1,
                     text: botResponse,
                     sender: 'bot',
                     timestamp: new Date(),
                 });
 
-                await nextTick(); // aguarda render
-                state.input = '';
-                textAreaRef.value?.focus(); // dá foco
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
@@ -115,36 +117,46 @@ export const actions = {
 
                 if (audioBlob.size === 0) return;
 
+                // Libera o microfone
+                const tracks = state.mediaRecorder?.stream?.getTracks?.();
+                tracks?.forEach(track => track.stop());
+
                 const formData = new FormData();
                 formData.append("audio", audioBlob);
-                formData.append("session_id", state.idChat);
+                formData.append("session_id", state.session_id);
+
+                const userAudioUrl = URL.createObjectURL(audioBlob); // ⚠️ temporário, pode trocar pelo da API depois
+
+                // ✅ Adiciona a mensagem do usuário com o áudio **antes de enviar**
+                state.messages.push({
+                    id: state.messages.length + 1,
+                    text: "",
+                    sender: "user",
+                    timestamp: new Date(),
+                    audioUrl: userAudioUrl,
+                });
 
                 try {
                     state.loadingAudio = true;
                     const audioUrl = import.meta.env.VITE_API_AUDIO_URL;
                     const res = await axios.post(
-                        `${audioUrl}/audio-inference/`,
-                        formData,
-                        {
-                            headers: { "Content-Type": "multipart/form-data" },
-                            timeout: 920000,
+                    `${audioUrl}/audio-inference/`,
+                    formData,
+                    {
+                        headers: { "Content-Type": "multipart/form-data" },
+                        timeout: 9999999,
+                        onDownloadProgress: () => {
+                        console.log("📥 Backend ainda respondendo...");
                         }
+                    }
                     );
+
 
                     const resposta = res.data.resposta;
                     const ttsUrl = res.data.tts_audio_url;
-                    const userAudioUrl = res.data.user_audio_url;
 
                     state.messages.push({
                         id: state.messages.length + 1,
-                        text: "",
-                        sender: "user",
-                        timestamp: new Date(),
-                        audioUrl: userAudioUrl,
-                    });
-
-                    state.messages.push({
-                        id: state.messages.length + 2,
                         text: resposta,
                         sender: "bot",
                         timestamp: new Date(),
@@ -155,18 +167,52 @@ export const actions = {
                 } finally {
                     state.loadingAudio = false;
                     state.isRecording = false;
+                    state.mediaRecorder = null;
+                    state.chunks = [];
                 }
             };
+
 
             state.mediaRecorder.start();
             state.isRecording = true;
         } else {
-            // Parar gravação manual
             if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
                 state.mediaRecorder.stop();
             }
         }
+    },
+
+    checkPendingResponse() {
+        const textUrl = import.meta.env.VITE_API_TEXT_URL;
+        axios
+            .get(`${textUrl}/inference/pending-response/${state.session_id}`)
+            .then((res) => {
+                if (res.data?.resposta) {
+                    // 🧼 Limpa o prefixo de session_id, se existir
+                    const cleanText = res.data.resposta.replace(/^\[session_id=.*?\]\n?/, '');
+
+                    // ✅ Evita mensagens duplicadas com base no conteúdo limpo
+                    const jaTem = state.messages.some(
+                        (msg) => msg.text === cleanText && msg.sender === 'bot'
+                    );
+
+                    if (!jaTem) {
+                        state.messages.push({
+                            id: state.messages.length + 1,
+                            text: cleanText,
+                            sender: 'bot',
+                            timestamp: new Date(),
+                        });
+                    }
+                }
+            })
+            .catch((err) => {
+                console.warn("⚠️ Erro ao verificar resposta pendente:", err);
+            });
     }
 };
-
 export default { state, actions };
+
+// setInterval(() => {
+//     actions.checkPendingResponse();
+// }, 2000); // verifica a cada 2 segundos

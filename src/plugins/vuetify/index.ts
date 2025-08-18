@@ -40,9 +40,9 @@ const defaultConfig = {
 
 
 const defaultThemeOptions = {
-  // defaultTheme: 'dark',
+  defaultTheme: 'dark',
   // defaultTheme: 'light',
-  defaultTheme: globalStage.defaultTheme,
+  // defaultTheme: globalStage.defaultTheme,
   variations: {
     colors: [],
     lighten: 0,

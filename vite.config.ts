@@ -79,4 +79,66 @@ export default defineConfig({
         strictPort: true,
         cors: true,
     },
+  },
+  build: {
+    outDir: './docs'
+  },
+  plugins: [
+    vue(),
+    Pages({
+      pagesDir: 'src/pages',
+      extensions: ['vue'],
+      exclude: ["**/components/*.vue"],
+    }),
+    VitePWA({
+      // mode: "development",
+      base: "./",
+      srcDir: "src",
+      filename: "sw.ts",
+      includeAssets: ["icons/icon512.png"],
+      strategies: "injectManifest",
+      registerType: 'autoUpdate',
+      manifest: {
+        name: "Polaris",
+        lang: "pt-br",
+        short_name: "Polaris",
+        display: "standalone",
+        background_color: "#c3cfe2",
+        "theme_color": "#c3cfe2",
+        "orientation": "portrait",
+        "categories": ["Office"],
+        "screenshots": [
+          {
+            "src": "screen.jpg",
+            "sizes": "1104x1104",
+            "type": "image/jpg"
+          }
+        ],
+        icons: [
+          {
+            src: "icons/icon.png",
+            sizes: "108x108",
+            type: "image/png",
+          },
+          {
+            src: "icons/icon.png",
+            sizes: "108x108",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "icons/icon.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "icons/icon.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+    }),
+  ]
 });
