@@ -1,6 +1,5 @@
 import state from "./globalState";
 
-
 let controleLoad = false;
 export default {
     async begin() {
@@ -10,11 +9,12 @@ export default {
         controleLoad = false;
     },
 
-
     toggleTheme() {
         state.theme.name = state.theme.current.dark ? "light" : "dark";
         localStorage.setItem("defaultTheme", state.theme.name);
     },
 
-
+    clearError() {
+        state.error = null;
+    },
 };
