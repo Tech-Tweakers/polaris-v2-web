@@ -29,15 +29,30 @@ Frontend oficial do projeto **Polaris v2**, interface Vue.js minimalista, respon
 
 ### 🧪 Variáveis de Ambiente
 
-Crie um `.env` ou `.env.local` com as seguintes variáveis (pode ajustar conforme sua infra):
+#### Configuração Segura (Recomendada)
 
+**1. Crie um arquivo `.env`** (versionado):
 ```env
+# URLs das APIs
 VITE_API_TEXT_URL=http://localhost:8000
 VITE_API_AUDIO_URL=http://localhost:8010
+
+# Configurações do servidor
+VITE_SERVER=localhost
+VITE_PORT=2002
 ```
 
+**2. Crie um arquivo `.env.local`** (NÃO versionado - para secrets):
+```env
+# Token JWT para autenticação da API
+VITE_API_TOKEN=G#o1tj67G6^0Ok53KGfIPoSB
+```
+
+> 🔒 **Segurança**: O arquivo `.env.local` está no `.gitignore` e não será commitado.
+
 > 📌 `VITE_API_TEXT_URL` aponta para o backend principal da Polaris API.  
-> 📌 `VITE_API_AUDIO_URL` aponta para o backend de integração com TTS e gravação.
+> 📌 `VITE_API_AUDIO_URL` aponta para o backend de integração com TTS e gravação.  
+> 🔐 `VITE_API_TOKEN` deve ser igual ao WEB_SECRET configurado no backend.
 
 ---
 
@@ -67,6 +82,12 @@ npm run app:buildWin
 ---
 
 ### 📤 Comunicação com a API
+
+Todas as requisições incluem automaticamente o token JWT de API:
+
+```http
+Authorization: Bearer ${VITE_API_TOKEN}
+```
 
 #### 1. Texto para texto
 ```http

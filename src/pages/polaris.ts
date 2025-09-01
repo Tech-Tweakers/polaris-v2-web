@@ -1,6 +1,7 @@
 import { nextTick, reactive, ref } from 'vue';
-import axios from 'axios';
+import apiClient from '../services/apiService';
 import { iMensagem } from '../interfaces/interfacePolaris';
+import config from '../ts/config';
 
 const generateSessionId = () => {
     return Math.random().toString(36).substring(2, 15);
@@ -67,15 +68,13 @@ export const actions = {
 
             try {
                 state.loading = true;
-                const textUrl = import.meta.env.VITE_API_TEXT_URL;
-                const res = await axios.post(
-                    `${textUrl}/inference/`,
+                const res = await apiClient.post(
+                    `/inference/`,
                     {
                         prompt: userText,
                         session_id: state.session_id,
                     },
                     {
-                        headers: { 'content-type': 'application/json' },
                         timeout: 90000,
                     }
                 );
@@ -138,9 +137,8 @@ export const actions = {
 
                 try {
                     state.loadingAudio = true;
-                    const audioUrl = import.meta.env.VITE_API_AUDIO_URL;
-                    const res = await axios.post(
-                    `${audioUrl}/audio-inference/`,
+                    const res = await apiClient.post(
+                    `${config.API_AUDIO_URL}/audio-inference/`,
                     formData,
                     {
                         headers: { "Content-Type": "multipart/form-data" },
@@ -183,9 +181,8 @@ export const actions = {
     },
 
     checkPendingResponse() {
-        const textUrl = import.meta.env.VITE_API_TEXT_URL;
-        axios
-            .get(`${textUrl}/inference/pending-response/${state.session_id}`)
+        apiClient
+            .get(`/inference/pending-response/${state.session_id}`)
             .then((res) => {
                 if (res.data?.resposta) {
                     // 🧼 Limpa o prefixo de session_id, se existir
