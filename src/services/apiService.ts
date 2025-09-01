@@ -4,6 +4,9 @@ import config from '../ts/config';
 // Token de API da variável de ambiente
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || 'G#o1tj67G6^0Ok53KGfIPoSB';
 
+// Debug: log do token (remover em produção)
+console.log('🔑 Token sendo usado:', API_TOKEN);
+
 // Configuração do axios para API
 const apiClient = axios.create({
     baseURL: config.API_BASE_URL,
@@ -18,6 +21,15 @@ apiClient.interceptors.request.use(
     (config) => {
         // Garante que o token sempre esteja presente
         config.headers.Authorization = `Bearer ${API_TOKEN}`;
+        
+        // Debug: log da requisição
+        console.log('🔍 Requisição sendo enviada:', {
+            url: config.url,
+            method: config.method,
+            headers: config.headers,
+            data: config.data
+        });
+        
         return config;
     },
     (error) => {
