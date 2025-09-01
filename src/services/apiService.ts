@@ -1,26 +1,58 @@
 import axios from 'axios';
 import config from '../ts/config';
 
-// Token de API da variável de ambiente
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || 'G#o1tj67G6^0Ok53KGfIPoSB';
+// Credenciais da API
+const CLIENT_NAME = 'web_client';
+const CLIENT_SECRET = import.meta.env.VITE_API_TOKEN || 'G#o1tj67G6^0Ok53KGfIPoSB';
 
-// Debug: log do token (remover em produção)
-console.log('🔑 Token sendo usado:', API_TOKEN);
+// Debug: log das credenciais (remover em produção)
+console.log('🔑 Credenciais sendo usadas:', { CLIENT_NAME, CLIENT_SECRET });
 
 // Configuração do axios para API
 const apiClient = axios.create({
     baseURL: config.API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN}`,
     },
 });
 
+// Cache do token JWT
+let jwtToken: string | null = null;
+let tokenExpiry: number | null = null;
+
+// Função para obter token JWT
+async function getJWTToken(): Promise<string> {
+    // Verifica se já tem um token válido
+    if (jwtToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return jwtToken;
+    }
+
+    try {
+        console.log('🔄 Obtendo novo token JWT...');
+        
+        const response = await axios.post(`${config.API_BASE_URL}/auth/token`, {
+            client_name: CLIENT_NAME,
+            client_secret: CLIENT_SECRET
+        });
+
+        jwtToken = response.data.access_token;
+        // Token expira em 24 horas (86400000 ms)
+        tokenExpiry = Date.now() + (24 * 60 * 60 * 1000);
+        
+        console.log('✅ Token JWT obtido com sucesso');
+        return jwtToken;
+    } catch (error) {
+        console.error('❌ Erro ao obter token JWT:', error);
+        throw error;
+    }
+}
+
 // Interceptor para garantir que o token sempre seja enviado
 apiClient.interceptors.request.use(
-    (config) => {
-        // Garante que o token sempre esteja presente
-        config.headers.Authorization = `Bearer ${API_TOKEN}`;
+    async (config) => {
+        // Obtém o token JWT antes de cada requisição
+        const token = await getJWTToken();
+        config.headers.Authorization = `Bearer ${token}`;
         
         // Debug: log da requisição
         console.log('🔍 Requisição sendo enviada:', {
