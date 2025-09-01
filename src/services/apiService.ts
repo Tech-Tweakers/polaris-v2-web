@@ -30,9 +30,14 @@ async function getJWTToken(): Promise<string> {
     try {
         console.log('🔄 Obtendo novo token JWT...');
         
-        const response = await axios.post(`${config.API_BASE_URL}/auth/token`, {
-            client_name: CLIENT_NAME,
-            client_secret: CLIENT_SECRET
+        const formData = new FormData();
+        formData.append('client_name', CLIENT_NAME);
+        formData.append('client_secret', CLIENT_SECRET);
+        
+        const response = await axios.post(`${config.API_BASE_URL}/auth/token`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
 
         jwtToken = response.data.access_token;
