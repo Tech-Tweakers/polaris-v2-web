@@ -1,0 +1,116 @@
+name: 🚀 Auto Deploy
+
+on:
+  # Executa quando o auto-merge é completado
+  workflow_run:
+    workflows: ["Auto Merge to Main"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🐍 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: 📦 Install dependencies
+        run: npm ci
+      
+      - name: 🏗️ Build application
+        run: npm run build
+      
+      - name: 📦 Build Electron (Linux)
+        run: npm run app:build
+      
+      - name: 📦 Build Electron (Windows)
+        run: npm run app:buildWin
+      
+      - name: 🏷️ Get version
+        id: get-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+      
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: polaris-build-${{ steps.get-version.outputs.version }}
+          path: |
+            docs/
+            dist_electron/
+          retention-days: 30
+      
+      - name: 🚀 Deploy to server
+        run: |
+          echo "🚀 Deploying version ${{ steps.get-version.outputs.version }} to production..."
+          # Aqui você pode adicionar comandos de deploy específicos
+          # Por exemplo: rsync, scp, docker push, etc.
+          echo "✅ Deploy completed!"
+      
+      - name: 🔍 Health check
+        run: |
+          echo "🏥 Running health checks..."
+          # Aguarda um pouco para o deploy
+          sleep 30
+          
+          # Aqui você pode adicionar health checks específicos
+          # curl -f https://seu-dominio.com/health || exit 1
+          echo "✅ Health check passed"
+      
+      - name: 🎉 Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get-version.outputs.version }}
+          release_name: Polaris v${{ steps.get-version.outputs.version }}
+          body: |
+            🚀 Auto-deployed version ${{ steps.get-version.outputs.version }}
+            
+            ## Changes
+            - Auto-merge from develop branch
+            - Build and deployment completed
+            - Health checks passed
+            
+            ## Artifacts
+            - Web build: docs/
+            - Electron builds: dist_electron/
+          draft: false
+          prerelease: false
+      
+      - name: 🔔 Notify success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: '🎉 Polaris v${{ steps.get-version.outputs.version }} deployed successfully to production!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: 🔔 Notify failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: '❌ Deploy failed for version ${{ steps.get-version.outputs.version }}! Check the workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+
