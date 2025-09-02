@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polaris - Redirecionando...</title>
     <script>
-        // GitHub Pages SPA redirect
+        // GitHub Pages SPA redirect for subpath
         // This script takes the current URL and converts it from a 404 to a working URL
-        var pathSegmentsToKeep = 0;
+        var pathSegmentsToKeep = 1; // Keep the /polaris-v2-web/ part
         
         var l = window.location;
         l.replace(
@@ -22,7 +22,7 @@
 <body>
     <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
         <h2>Redirecionando...</h2>
-        <p>Se você não foi redirecionado automaticamente, <a href="/">clique aqui</a>.</p>
+        <p>Se você não foi redirecionado automaticamente, <a href="/polaris-v2-web/">clique aqui</a>.</p>
     </div>
 </body>
 </html>
