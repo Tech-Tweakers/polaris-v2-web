@@ -7,10 +7,6 @@ export interface HealthStatus {
     api: {
       status: 'healthy' | 'unhealthy';
     };
-    jwt: {
-      status: 'healthy' | 'unhealthy';
-      hasToken: boolean;
-    };
     frontend: {
       status: 'healthy';
       version: string;
@@ -34,7 +30,6 @@ class HealthService {
       timestamp: new Date().toISOString(),
       services: {
         api: { status: 'unhealthy' },
-        jwt: { status: 'unhealthy', hasToken: false },
         frontend: {
           status: 'healthy',
           version: this.version,
@@ -61,41 +56,7 @@ class HealthService {
       healthStatus.status = 'degraded';
     }
 
-    // Test JWT token status
-    try {
-      const token = localStorage.getItem('jwt_token');
-      const tokenExpiry = localStorage.getItem('jwt_token_expiry');
-      
-      if (token && tokenExpiry) {
-        const expiryTime = parseInt(tokenExpiry);
-        const now = Date.now();
-        
-        if (now < expiryTime) {
-          healthStatus.services.jwt = {
-            status: 'healthy',
-            hasToken: true
-          };
-        } else {
-          healthStatus.services.jwt = {
-            status: 'unhealthy',
-            hasToken: true
-          };
-          healthStatus.status = 'degraded';
-        }
-      } else {
-        healthStatus.services.jwt = {
-          status: 'unhealthy',
-          hasToken: false
-        };
-        healthStatus.status = 'degraded';
-      }
-    } catch (error: any) {
-      healthStatus.services.jwt = {
-        status: 'unhealthy',
-        hasToken: false
-      };
-      healthStatus.status = 'degraded';
-    }
+
 
     // Determine overall status
     if (healthStatus.services.api.status === 'unhealthy') {
@@ -124,11 +85,7 @@ class HealthService {
         } : null
       },
       environment: {
-        mode: import.meta.env.MODE,
-        apiUrl: import.meta.env.VITE_API_TEXT_URL,
-        audioUrl: import.meta.env.VITE_API_AUDIO_URL,
-        server: import.meta.env.VITE_SERVER,
-        port: import.meta.env.VITE_PORT
+        mode: import.meta.env.MODE
       }
     };
 
