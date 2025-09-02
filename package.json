@@ -113,55 +113,111 @@
         ]
       }
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+    "devDependencies": {
+        "@mdi/font": "^6.7.96",
+        "@types/dateformat": "^3.0.1",
+        "@types/md5": "^2.3.1",
+        "@types/socket.io-client": "^3.0.0",
+        "@types/webfontloader": "^1.0.0",
+        "@vitejs/plugin-vue": "^5.2.4",
+        "@vue/compiler-sfc": "^3.0.5",
+        "@vuedx/typescript-plugin-vue": "^0.7.5",
+        "cross-env": "^7.0.3",
+        "eslint": "7.32.0",
+        "eslint-config-prettier": "8.3.0",
+        "eslint-plugin-md": "1.0.19",
+        "eslint-plugin-vue": "7.17.0",
+        "sass": "^1.89.2",
+        "sass-loader": "^12.1.0",
+        "typescript": "^4.3.2",
+        "vite": "^5.4.19",
+        "vite-plugin-pages": "^0.32.0",
+        "vite-plugin-pwa": "^0.16.7",
+        "vite-plugin-vuetify": "^2.0.4",
+        "vue-cli-plugin-vuetify": "~2.5.1",
+        "vue-tsc": "^0.2.2",
+        "workbox-precaching": "^6.5.3"
     },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64",
-            "armv7l"
-          ]
+    "build": {
+        "appId": "com.${name}.polaris",
+        "productName": "polaris",
+        "copyright": "Copyright © 2022 ${name}",
+        "artifactName": "${productName}-${version}-${arch}.${ext}",
+        "asar": true,
+        "win": {
+            "icon": "public/icons/icon.ico",
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                },
+                {
+                    "target": "zip",
+                    "arch": [
+                        "x64",
+                        "ia32"
+                    ]
+                }
+            ],
+            "extraResources": {
+                "from": "./extra/win32/",
+                "to": "./",
+                "filter": [
+                    "**/*"
+                ]
+            }
         },
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "armv7l"
-          ]
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true
         },
-        {
-          "target": "snap",
-          "arch": [
-            "x64",
-            "armv7l"
-          ]
+        "linux": {
+            "target": [
+                {
+                    "target": "AppImage",
+                    "arch": [
+                        "x64",
+                        "armv7l"
+                    ]
+                },
+                {
+                    "target": "deb",
+                    "arch": [
+                        "x64",
+                        "armv7l"
+                    ]
+                },
+                {
+                    "target": "snap",
+                    "arch": [
+                        "x64",
+                        "armv7l"
+                    ]
+                }
+            ],
+            "category": "Utility",
+            "maintainer": "Vitor Ramos by TechTweakers",
+            "desktop": {
+                "Name": "PolarisAi",
+                "Categories": "Utility"
+            }
+        },
+        "deb": {
+            "depends": []
+        },
+        "extraFiles": [],
+        "files": [
+            "dist/**/*",
+            "electron/**/*"
+        ],
+        "directories": {
+            "buildResources": "public",
+            "output": "dist_electron"
         }
-      ],
-      "category": "Utility",
-      "maintainer": "Vitor Ramos by TechTweakers",
-      "desktop": {
-        "Name": "PolarisAi",
-        "Categories": "Utility"
-      }
     },
-    "deb": {
-      "depends": []
-    },
-    "extraFiles": [],
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
-    "directories": {
-      "buildResources": "public",
-      "output": "dist_electron"
-    }
-  },
-  "displayName": "Polaris",
-  "email": "vitor.rochadf@gmail.com",
-  "license": "MIT"
+    "displayName": "Polaris",
+    "email": "vitor.rochadf@gmail.com",
+    "license": "MIT"
 }

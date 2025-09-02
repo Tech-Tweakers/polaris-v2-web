@@ -1,0 +1,147 @@
+/* index.css */
+
+
+* {
+    margin: 0;
+    padding: 0;
+    outline-style: none;
+}
+
+html {
+    font-smoothing: antialiased;
+    height: 100%;
+}
+
+body {
+    font-size: 0.79rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+    color: #495057;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+header {
+    background: #263238;
+    height: 40px;
+    color: #ffffff;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: 800;
+}
+
+.edtGrid {
+    width: 100%;
+    font-size: 14px;
+    text-align: right;
+    border-radius: 3px;
+    border: 1px solid #ababab;
+    color: #303030;
+}
+
+.text-red {
+    color: #ff3860 !important;
+}
+
+.obr {
+    border-left: 2px solid #ff3860 !important;
+}
+
+.ss {
+    border: 1px solid #899caa;
+    border-radius: 3px;
+    color: #3a454d;
+    font-weight: bold;
+    padding: 4px 6px;
+    box-shadow: inset 0px 1px 3px #bbb;
+    background: white;
+    font-size: 12px;
+    width: 100%;
+    text-transform: uppercase;
+}
+
+.dark .ss {
+    border: 1px solid #171717;
+    color: #d4dce8;
+    background: #121212;
+    box-shadow: inset 0px 1px 3px transparent;
+}
+
+.dark .ss:focus {
+    background-color: #1c1c1c !important;
+}
+
+.ss:focus {
+    background-color: #ecf9e2 !important;
+}
+
+.ss[type="radio"],
+.ss[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    background-color: #f1f1f1;
+    height: 20px;
+    width: 20px;
+    border: 0;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-right: 5px;
+    outline: none;
+}
+
+.ss[type="radio"]:checked::before,
+.ss[type="checkbox"]:checked::before {
+    position: absolute;
+    font: 16px/1 "Open Sans", sans-serif;
+    left: 5px;
+    top: 1px;
+    content: "L";
+    transform: rotate(40deg) scaleX(-1);
+    font-weight: bold;
+    color: #367fa9;
+}
+
+.ss[type="radio"]:hover,
+.ss[type="checkbox"]:hover {
+    background-color: #ecf9e2;
+}
+
+.ss[type="text"] {
+    text-transform: uppercase;
+}
+
+/* botão limpar */
+.btnClear {
+    background: #fff url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiI+PHBhdGggZD0iTTE0LjUgMi41bC0xLjc1LTEuNzUtNS4yNSA1LjI1LTUuMjUtNS4yNS0xLjc1IDEuNzUgNS4yNSA1LjI1LTUuMjUgNS4yNSAxLjc1IDEuNzUgNS4yNS01LjI1IDUuMjUgNS4yNSAxLjc1LTEuNzUtNS4yNS01LjI1IDUuMjUtNS4yNXoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NjYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+) no-repeat right 4px center;
+    cursor: pointer;
+    transition: background 0.4s !important;
+}
+
+.btnClear.x-r {
+    background-position: right 4px center !important;
+}
+
+.btnClear.x-l {
+    background-position: left 4px center !important;
+}
+
+.btnClear.onX {
+    cursor: pointer;
+}
+
+.inputLeft input {
+    text-align: left;
+}
+
+.inputCenter input {
+    text-align: center;
+}
+
+.inputRight input {
+    text-align: right;
+}
