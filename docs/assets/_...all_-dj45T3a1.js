@@ -1,0 +1,1 @@
+import{_ as e}from"./plugin-vue_export-helper-DlAUqK2U.js";import{c as o,a as r}from"./index-D31VjXJj.js";const c={};function n(t,_){return r(),o("h1",null,"rota não encontrada")}const l=e(c,[["render",n]]);export{l as default};
