@@ -1,0 +1,1 @@
+import{h as e}from"./healthService-DNsGJ4Yk.js";import{d as s,r,o,c as n,t as c,a as l}from"./index-DVfAgo3s.js";const m=s({__name:"status",setup(u){const t=r("checking...");return o(async()=>{try{const a=await e.getHealthStatus();t.value=a.status}catch{t.value="error"}}),(a,i)=>(l(),n("div",null,c(t.value),1))}});export{m as default};
