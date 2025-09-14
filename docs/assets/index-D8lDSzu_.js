@@ -1,0 +1,1 @@
+import{_ as o}from"./plugin-vue_export-helper-DlAUqK2U.js";import{e as n,w as r,f as s,a,g as _}from"./index-11uMQJij.js";const c={};function f(l,e){const t=s("H1");return a(),n(t,null,{default:r(()=>e[0]||(e[0]=[_("rota teste")])),_:1,__:[0]})}const d=o(c,[["render",f]]);export{d as default};
