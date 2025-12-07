@@ -1,5 +1,5 @@
 import { nextTick, reactive, ref } from 'vue';
-import apiClient from '../services/apiService';
+import apiClient, { getJWTToken } from '../services/apiService';
 import { iMensagem } from '../interfaces/interfacePolaris';
 import config from '../ts/config';
 
@@ -42,11 +42,54 @@ export const state = reactive({
     loadingAudio: false,
     mediaRecorder: null as MediaRecorder | null,
     chunks: <BlobPart[]>[],
+    streaming: false,
+    uploading: false,
 });
 
 const textAreaRef = ref();
 
 export const actions = {
+
+    async enviarArquivo(file: File) {
+        if (!file) return;
+        state.uploading = true;
+
+        // Mensagem de status
+        state.messages.push({
+            id: state.messages.length + 1,
+            text: `📂 Enviando arquivo: ${file.name}`,
+            sender: "bot",
+            timestamp: new Date(),
+        });
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("session_id", state.session_id);
+
+            await apiClient.post(`/upload-pdf/`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+                timeout: 120000,
+            });
+
+            state.messages.push({
+                id: state.messages.length + 1,
+                text: `✅ Arquivo ${file.name} indexado para a sessão.`,
+                sender: "bot",
+                timestamp: new Date(),
+            });
+        } catch (error) {
+            console.error("Erro ao enviar arquivo:", error);
+            state.messages.push({
+                id: state.messages.length + 1,
+                text: `❌ Erro ao enviar ${file.name}.`,
+                sender: "bot",
+                timestamp: new Date(),
+            });
+        } finally {
+            state.uploading = false;
+        }
+    },
 
     async enviarMsg() {
         if (state.input?.trim()) {
@@ -67,27 +110,65 @@ export const actions = {
             textAreaRef.value?.focus();
 
             try {
-                state.loading = true;
-                const res = await apiClient.post(
-                    `/inference/`,
-                    {
+                state.streaming = true;
+
+                // Cria placeholder para a resposta do bot
+                const botMessage = {
+                    id: state.messages.length + 1,
+                    text: "digitando...", // placeholder animável no UI
+                    sender: "bot" as const,
+                    timestamp: null as unknown as Date | null,
+                };
+                state.messages.push(botMessage);
+
+                // Obter token e fazer streaming manual com fetch
+                const token = await getJWTToken();
+                const resp = await fetch(`${config.API_BASE_URL}/inference/stream`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
                         prompt: userText,
                         session_id: state.session_id,
-                    },
-                    {
-                        timeout: 90000,
-                    }
-                );
-
-                const botResponse = res.data.resposta;
-
-                state.messages.push({
-                    id: state.messages.length + 1,
-                    text: botResponse,
-                    sender: 'bot',
-                    timestamp: new Date(),
+                    }),
+                    // evita buffering agressivo em alguns proxies
+                    cache: "no-store",
                 });
 
+                if (!resp.ok) {
+                    const errorText = await resp.text().catch(() => "");
+                    throw new Error(`HTTP ${resp.status} ${errorText || ""}`.trim());
+                }
+                if (!resp.body) {
+                    throw new Error("Resposta sem body para streaming");
+                }
+
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+                let accumulated = "";
+                let firstChunk = true;
+
+                while (!done) {
+                    const { value, done: streamDone } = await reader.read();
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        if (chunk) {
+                            console.debug("chunk recebido:", chunk);
+                        }
+                        accumulated += chunk;
+                        if (firstChunk && chunk.trim().length > 0) {
+                            firstChunk = false;
+                        }
+                        botMessage.text = accumulated || (firstChunk ? "digitando..." : "...");
+                    }
+                    done = streamDone;
+                }
+
+                botMessage.text = accumulated.trim() || "(resposta vazia)";
+        botMessage.timestamp = new Date(); // timestamp de término do streaming
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
@@ -98,7 +179,7 @@ export const actions = {
                 });
             } finally {
                 state.inputDisabled = false;
-                state.loading = false;
+                state.streaming = false;
             }
         }
     },
