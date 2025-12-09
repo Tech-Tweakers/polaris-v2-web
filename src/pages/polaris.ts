@@ -4,18 +4,21 @@ import { iMensagem } from '../interfaces/interfacePolaris';
 import config from '../ts/config';
 
 const generateSessionId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
     return Math.random().toString(36).substring(2, 15);
 };
 
+// Sempre inicia um session_id novo para cada sessão do navegador
 const getSessionId = () => {
-    const sessionId = sessionStorage.getItem('session_id');
-    if (sessionId) {
-        return sessionId;
-    } else {
-        const newSessionId = generateSessionId();
+    const newSessionId = generateSessionId();
+    try {
         sessionStorage.setItem('session_id', newSessionId);
-        return newSessionId;
+    } catch (err) {
+        console.warn('Não foi possível salvar o session_id na sessionStorage.', err);
     }
+    return newSessionId;
 };
 
 
