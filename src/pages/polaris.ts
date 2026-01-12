@@ -4,18 +4,21 @@ import { iMensagem } from '../interfaces/interfacePolaris';
 import config from '../ts/config';
 
 const generateSessionId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
     return Math.random().toString(36).substring(2, 15);
 };
 
+// Sempre inicia um session_id novo para cada sessão do navegador
 const getSessionId = () => {
-    const sessionId = sessionStorage.getItem('session_id');
-    if (sessionId) {
-        return sessionId;
-    } else {
-        const newSessionId = generateSessionId();
+    const newSessionId = generateSessionId();
+    try {
         sessionStorage.setItem('session_id', newSessionId);
-        return newSessionId;
+    } catch (err) {
+        console.warn('Não foi possível salvar o session_id na sessionStorage.', err);
     }
+    return newSessionId;
 };
 
 
@@ -42,11 +45,54 @@ export const state = reactive({
     loadingAudio: false,
     mediaRecorder: null as MediaRecorder | null,
     chunks: <BlobPart[]>[],
+    streaming: false,
+    uploading: false,
 });
 
 const textAreaRef = ref();
 
 export const actions = {
+
+    async enviarArquivo(file: File) {
+        if (!file) return;
+        state.uploading = true;
+
+        // Mensagem de status
+        state.messages.push({
+            id: state.messages.length + 1,
+            text: `📂 Enviando arquivo: ${file.name}`,
+            sender: "bot",
+            timestamp: new Date(),
+        });
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("session_id", state.session_id);
+
+            await apiClient.post(`/upload-pdf/`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+                timeout: 120000,
+            });
+
+            state.messages.push({
+                id: state.messages.length + 1,
+                text: `✅ Arquivo ${file.name} indexado para a sessão.`,
+                sender: "bot",
+                timestamp: new Date(),
+            });
+        } catch (error) {
+            console.error("Erro ao enviar arquivo:", error);
+            state.messages.push({
+                id: state.messages.length + 1,
+                text: `❌ Erro ao enviar ${file.name}.`,
+                sender: "bot",
+                timestamp: new Date(),
+            });
+        } finally {
+            state.uploading = false;
+        }
+    },
 
     async enviarMsg() {
         if (state.input?.trim()) {
@@ -77,94 +123,76 @@ export const actions = {
             state.messages.push(botMessage);
 
             try {
-                state.loading = true;
+                state.streaming = true;
 
-                // Obtém token JWT
-                const token = localStorage.getItem('jwt_token') || await getJWTToken();
+                // Cria placeholder para a resposta do bot
+                const botMessage = {
+                    id: state.messages.length + 1,
+                    text: "digitando...", // placeholder animável no UI
+                    sender: "bot" as const,
+                    timestamp: null as unknown as Date | null,
+                };
+                state.messages.push(botMessage);
 
-                // Usar XMLHttpRequest para streaming SSE
-                const xhr = new XMLHttpRequest();
+                // Obter token e fazer streaming manual com fetch
+                const token = await getJWTToken();
+                const resp = await fetch(`${config.API_BASE_URL}/inference/stream`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        prompt: userText,
+                        session_id: state.session_id,
+                    }),
+                    // evita buffering agressivo em alguns proxies
+                    cache: "no-store",
+                });
 
-                xhr.open('POST', `${config.API_BASE_URL}/inference/stream/`, true);
-                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                if (!resp.ok) {
+                    const errorText = await resp.text().catch(() => "");
+                    throw new Error(`HTTP ${resp.status} ${errorText || ""}`.trim());
+                }
+                if (!resp.body) {
+                    throw new Error("Resposta sem body para streaming");
+                }
 
-                // FormData para enviar
-                const formData = new FormData();
-                formData.append('prompt', userText);
-                formData.append('session_id', state.session_id);
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+                let accumulated = "";
+                let firstChunk = true;
 
-                let fullResponse = '';
-                let lastLength = 0;
-
-                xhr.onreadystatechange = () => {
-                    if (xhr.readyState === 3) { // Receiving data
-                        const newData = xhr.responseText.substring(lastLength);
-                        lastLength = xhr.responseText.length;
-
-                        console.log('📦 Dados recebidos:', JSON.stringify(newData));
-
-                        // Processar dados SSE
-                        const lines = newData.split('\n');
-                        for (const line of lines) {
-                            if (line.startsWith('data: ')) {
-                                const data = line.slice(6);
-                                console.log('🎯 Data SSE:', JSON.stringify(data));
-
-                                if (data === '[START]') {
-                                    console.log('🎬 Streaming iniciado');
-                                } else if (data === '[DONE]') {
-                                    console.log('✅ Streaming concluído');
-                                    state.loading = false;
-                                    state.inputDisabled = false;
-                                } else if (data.startsWith('[ERROR]')) {
-                                    const errorMsg = data.replace('[ERROR]', '');
-                                    state.messages[botMessageIndex].text = `Erro: ${errorMsg}`;
-                                    state.loading = false;
-                                    state.inputDisabled = false;
-                                } else if (!data.startsWith('[')) {
-                                    // Chunk de texto normal
-                                    fullResponse += data;
-                                    // Forçar reatividade atualizando diretamente o array
-                                    state.messages[botMessageIndex].text = fullResponse;
-                                    console.log('📄 Texto atual:', JSON.stringify(fullResponse));
-
-                                    // Scroll automático durante streaming
-                                    setTimeout(() => {
-                                        const chatContainer = document.querySelector('.chat-container') as HTMLElement;
-                                        if (chatContainer) {
-                                            chatContainer.scrollTop = chatContainer.scrollHeight;
-                                        }
-                                    }, 10);
-                                }
-                            }
+                while (!done) {
+                    const { value, done: streamDone } = await reader.read();
+                    if (value) {
+                        const chunk = decoder.decode(value, { stream: true });
+                        if (chunk) {
+                            console.debug("chunk recebido:", chunk);
                         }
+                        accumulated += chunk;
+                        if (firstChunk && chunk.trim().length > 0) {
+                            firstChunk = false;
+                        }
+                        botMessage.text = accumulated || (firstChunk ? "digitando..." : "...");
                     }
-                };
+                    done = streamDone;
+                }
 
-                xhr.onload = () => {
-                    console.log('✅ XMLHttpRequest concluído');
-                    if (!fullResponse) {
-                        state.messages[botMessageIndex].text = 'Erro: Resposta vazia do servidor.';
-                    }
-                    state.loading = false;
-                    state.inputDisabled = false;
-                };
-
-                xhr.onerror = (error) => {
-                    console.error('❌ Erro XMLHttpRequest:', error);
-                    state.messages[botMessageIndex].text = 'Erro: Não foi possível conectar ao backend.';
-                    state.loading = false;
-                    state.inputDisabled = false;
-                };
-
-                console.log('🚀 Enviando XMLHttpRequest para streaming...');
-                xhr.send(formData);
-
+                botMessage.text = accumulated.trim() || "(resposta vazia)";
+        botMessage.timestamp = new Date(); // timestamp de término do streaming
             } catch (error) {
                 console.error('Error sending message:', error);
-                state.messages[botMessageIndex].text = `Erro: Não foi possível conectar ao backend.`;
-                state.loading = false;
+                state.messages.push({
+                    id: state.messages.length + 1,
+                    text: `Erro: Não foi possível conectar ao backend.`,
+                    sender: 'bot',
+                    timestamp: new Date(),
+                });
+            } finally {
                 state.inputDisabled = false;
+                state.streaming = false;
             }
         }
     },

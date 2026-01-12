@@ -71,6 +71,7 @@ if (typeof window !== "undefined" && !window.__copyHandlerAdded) {
 }
 
 const chatContainer = ref<HTMLElement | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
 let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const scrollToBottom = () => {
@@ -132,6 +133,20 @@ const handleEnter = (event: KeyboardEvent) => {
   }
 };
 
+const triggerFile = () => {
+  fileInput.value?.click();
+};
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    actions.enviarArquivo(file);
+  }
+  // reset para permitir o mesmo nome de arquivo novamente
+  if (target) target.value = "";
+};
+
 const formatTimestamp = (ts: string | Date) => {
   const date = typeof ts === "string" ? new Date(ts) : ts;
   const dia = String(date.getDate()).padStart(2, "0");
@@ -167,28 +182,24 @@ const formatTimestamp = (ts: string | Date) => {
           }"
         >
           <!-- tudo dentro do balão -->
-          <template v-if="message.text && !message.audioUrl">
+          <template v-if="message.text && !message.audioUrl && message.text !== 'digitando...'">
             <div class="message-content" v-html="renderMarkdown(message.text)"></div>
           </template>
 
           <template v-if="message.audioUrl">
             <audio :src="message.audioUrl" controls class="audio-player" />
           </template>
-
-          <!-- Indicador de streaming -->
-          <template v-if="!message.text && !message.audioUrl && message.sender === 'bot' && state.loading">
-            <div class="typing-indicator">
-              <span class="dot"></span>
-              <span class="dot"></span>
-              <span class="dot"></span>
-            </div>
+          <template v-else-if="message.text === 'digitando...'">
+            <span class="typing-dots">
+              <span>.</span><span>.</span><span>.</span>
+            </span>
           </template>
-
-          <!-- Só mostra "mensagem vazia" se não for bot ou se não estiver carregando -->
-          <template v-if="!message.text && !message.audioUrl && !(message.sender === 'bot' && state.loading)">
+          <template v-else-if="!message.text && !message.audioUrl">
             <em>⚠️ Mensagem vazia?</em>
           </template>
-          <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
+          <div class="timestamp" v-if="message.timestamp">
+            {{ formatTimestamp(message.timestamp) }}
+          </div>
         </div>
       </div>
       <div class="textArea pa-4 d-flex align-center">
@@ -199,8 +210,8 @@ const formatTimestamp = (ts: string | Date) => {
           class="flex-grow-1 mr-2"
           auto-grow
           rows="1"
-          :disabled="state.isRecording || state.loadingAudio"
-          :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio }"
+          :disabled="state.isRecording || state.loadingAudio || state.streaming || state.uploading"
+          :class="{ 'input-bloqueado': state.isRecording || state.loadingAudio || state.streaming || state.uploading }"
           @keydown.enter="handleEnter"
         />
         <v-btn
@@ -211,6 +222,7 @@ const formatTimestamp = (ts: string | Date) => {
             : (state.isRecording ? 'red darken-2' : 'teal darken-1')"
           icon
           @click="handleDynamicButton"
+          :disabled="state.streaming || state.uploading"
         >
           <v-icon>
             {{
@@ -222,18 +234,25 @@ const formatTimestamp = (ts: string | Date) => {
             }}
           </v-icon>
         </v-btn>
+        <v-btn
+          class="ml-2 pulse-on-record"
+          :loading="state.uploading"
+          :disabled="state.streaming || state.loadingAudio || state.isRecording"
+          color="blue darken-2"
+          icon
+          @click="triggerFile"
+        >
+          <v-icon>mdi-paperclip</v-icon>
+        </v-btn>
+        <input
+          type="file"
+          ref="fileInput"
+          accept=".pdf"
+          style="display: none"
+          @change="handleFileChange"
+        />
       </div>
-      <v-overlay
-        :model-value="state.loading"
-        class="align-center justify-center"
-        persistent
-      >
-        <v-progress-circular
-          color="primary"
-          indeterminate
-          size="64"
-        ></v-progress-circular>
-      </v-overlay>
+      <!-- overlay removido para permitir ver o streaming -->
     </v-main>
   </v-app>
 </template>

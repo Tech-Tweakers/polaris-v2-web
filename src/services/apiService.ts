@@ -3,10 +3,7 @@ import config from '../ts/config';
 
 // Credenciais da API
 const CLIENT_NAME = 'web_client';
-const CLIENT_SECRET = import.meta.env.VITE_API_TOKEN || 'G#o1tj67G6^0Ok53KGfIPoSB';
-
-// Debug: log das credenciais (remover em produção)
-console.log('🔑 Credenciais sendo usadas:', { CLIENT_NAME, CLIENT_SECRET });
+const CLIENT_SECRET = import.meta.env.VITE_API_TOKEN || '';
 
 // Configuração do axios para API
 const apiClient = axios.create({
@@ -28,24 +25,24 @@ export async function getJWTToken(): Promise<string> {
     }
 
     try {
-        console.log('🔄 Obtendo novo token JWT...');
-        
-        // O endpoint espera Form data
-        const formData = new FormData();
-        formData.append('client_name', CLIENT_NAME);
-        formData.append('client_secret', CLIENT_SECRET);
+        if (!CLIENT_SECRET) {
+            throw new Error('VITE_API_TOKEN não configurado no frontend');
+        }
 
-        const response = await axios.post(`${config.API_BASE_URL}/auth/token`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        // O endpoint espera parâmetros de query, não FormData
+        const response = await axios.post(
+            `${config.API_BASE_URL}/auth/token?client_name=${CLIENT_NAME}&client_secret=${CLIENT_SECRET}`
+        );
 
-        jwtToken = response.data.access_token;
-        // Token expira em 24 horas (86400000 ms)
-        tokenExpiry = Date.now() + (24 * 60 * 60 * 1000);
-        
-        console.log('✅ Token JWT obtido com sucesso');
+        const accessToken = response.data?.access_token;
+        if (!accessToken) {
+            throw new Error('Token ausente na resposta do backend');
+        }
+
+        jwtToken = accessToken;
+        const expiresInSeconds = response.data?.expires_in ?? 24 * 60 * 60;
+        tokenExpiry = Date.now() + expiresInSeconds * 1000;
+
         return jwtToken;
     } catch (error) {
         console.error('❌ Erro ao obter token JWT:', error);
@@ -59,14 +56,6 @@ apiClient.interceptors.request.use(
         // Obtém o token JWT antes de cada requisição
         const token = await getJWTToken();
         config.headers.Authorization = `Bearer ${token}`;
-        
-        // Debug: log da requisição
-        console.log('🔍 Requisição sendo enviada:', {
-            url: config.url,
-            method: config.method,
-            headers: config.headers,
-            data: config.data
-        });
         
         return config;
     },
