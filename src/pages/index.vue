@@ -18,10 +18,22 @@ declare global {
 }
 
 const renderMarkdown = (text: string = "") => {
+  if (!text || text.trim() === '') {
+    return '';
+  }
+
   const trimmed = text.trim();
   const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
 
-  return marked.parse(normalized);
+  try {
+    const html = marked.parse(normalized);
+    console.log('Markdown input:', trimmed);
+    console.log('Markdown output:', html);
+    return html;
+  } catch (error) {
+    console.error('Erro no parsing Markdown:', error);
+    return trimmed; // Fallback para texto simples
+  }
 };
 
 marked.use({
