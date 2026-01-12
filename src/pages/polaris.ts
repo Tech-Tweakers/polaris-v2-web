@@ -1,5 +1,5 @@
 import { nextTick, reactive, ref } from 'vue';
-import apiClient from '../services/apiService';
+import apiClient, { getJWTToken } from '../services/apiService';
 import { iMensagem } from '../interfaces/interfacePolaris';
 import config from '../ts/config';
 
@@ -66,39 +66,105 @@ export const actions = {
             await nextTick();
             textAreaRef.value?.focus();
 
+            // Cria mensagem do bot que será atualizada em tempo real
+            const botMessageIndex = state.messages.length;
+            const botMessage: iMensagem = {
+                id: botMessageIndex + 1,
+                text: '',
+                sender: 'bot',
+                timestamp: new Date(),
+            };
+            state.messages.push(botMessage);
+
             try {
                 state.loading = true;
-                const res = await apiClient.post(
-                    `/inference/`,
-                    {
-                        prompt: userText,
-                        session_id: state.session_id,
-                    },
-                    {
-                        timeout: 90000,
+
+                // Obtém token JWT
+                const token = localStorage.getItem('jwt_token') || await getJWTToken();
+
+                // Usar XMLHttpRequest para streaming SSE
+                const xhr = new XMLHttpRequest();
+
+                xhr.open('POST', `${config.API_BASE_URL}/inference/stream/`, true);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+                // FormData para enviar
+                const formData = new FormData();
+                formData.append('prompt', userText);
+                formData.append('session_id', state.session_id);
+
+                let fullResponse = '';
+                let lastLength = 0;
+
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 3) { // Receiving data
+                        const newData = xhr.responseText.substring(lastLength);
+                        lastLength = xhr.responseText.length;
+
+                        console.log('📦 Dados recebidos:', JSON.stringify(newData));
+
+                        // Processar dados SSE
+                        const lines = newData.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                console.log('🎯 Data SSE:', JSON.stringify(data));
+
+                                if (data === '[START]') {
+                                    console.log('🎬 Streaming iniciado');
+                                } else if (data === '[DONE]') {
+                                    console.log('✅ Streaming concluído');
+                                    state.loading = false;
+                                    state.inputDisabled = false;
+                                } else if (data.startsWith('[ERROR]')) {
+                                    const errorMsg = data.replace('[ERROR]', '');
+                                    state.messages[botMessageIndex].text = `Erro: ${errorMsg}`;
+                                    state.loading = false;
+                                    state.inputDisabled = false;
+                                } else if (!data.startsWith('[')) {
+                                    // Chunk de texto normal
+                                    fullResponse += data;
+                                    // Forçar reatividade atualizando diretamente o array
+                                    state.messages[botMessageIndex].text = fullResponse;
+                                    console.log('📄 Texto atual:', JSON.stringify(fullResponse));
+
+                                    // Scroll automático durante streaming
+                                    setTimeout(() => {
+                                        const chatContainer = document.querySelector('.chat-container') as HTMLElement;
+                                        if (chatContainer) {
+                                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                                        }
+                                    }, 10);
+                                }
+                            }
+                        }
                     }
-                );
+                };
 
-                const botResponse = res.data.resposta;
+                xhr.onload = () => {
+                    console.log('✅ XMLHttpRequest concluído');
+                    if (!fullResponse) {
+                        state.messages[botMessageIndex].text = 'Erro: Resposta vazia do servidor.';
+                    }
+                    state.loading = false;
+                    state.inputDisabled = false;
+                };
 
-                state.messages.push({
-                    id: state.messages.length + 1,
-                    text: botResponse,
-                    sender: 'bot',
-                    timestamp: new Date(),
-                });
+                xhr.onerror = (error) => {
+                    console.error('❌ Erro XMLHttpRequest:', error);
+                    state.messages[botMessageIndex].text = 'Erro: Não foi possível conectar ao backend.';
+                    state.loading = false;
+                    state.inputDisabled = false;
+                };
+
+                console.log('🚀 Enviando XMLHttpRequest para streaming...');
+                xhr.send(formData);
 
             } catch (error) {
                 console.error('Error sending message:', error);
-                state.messages.push({
-                    id: state.messages.length + 1,
-                    text: `Erro: Não foi possível conectar ao backend.`,
-                    sender: 'bot',
-                    timestamp: new Date(),
-                });
-            } finally {
-                state.inputDisabled = false;
+                state.messages[botMessageIndex].text = `Erro: Não foi possível conectar ao backend.`;
                 state.loading = false;
+                state.inputDisabled = false;
             }
         }
     },
