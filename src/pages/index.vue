@@ -67,17 +67,35 @@ const scrollToBottom = () => {
     if (chatContainer.value) {
       chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
     }
-  }, 100);
+  }, 50); // Mais rápido para streaming
 };
 
+const scrollToBottomImmediate = () => {
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
+};
+
+// Watcher para novas mensagens
 watch(
   () => state.messages.length,
   async () => {
     await nextTick();
-    const lastMessage = state.messages[state.messages.length - 1];
-    //if (lastMessage?.sender === "bot") scrollToBottom();
-    scrollToBottom()
+    scrollToBottom();
   }
+);
+
+// Watcher para mudanças no texto das mensagens (streaming)
+watch(
+  () => state.messages.map(msg => msg.text),
+  async (newTexts, oldTexts) => {
+    // Só faz scroll se o texto realmente mudou e estamos carregando
+    if (state.loading) {
+      await nextTick();
+      scrollToBottomImmediate();
+    }
+  },
+  { deep: true }
 );
 
 const handleDynamicButton = () => {
@@ -144,7 +162,18 @@ const formatTimestamp = (ts: string | Date) => {
           <template v-if="message.audioUrl">
             <audio :src="message.audioUrl" controls class="audio-player" />
           </template>
-          <template v-if="!message.text && !message.audioUrl">
+
+          <!-- Indicador de streaming -->
+          <template v-if="!message.text && !message.audioUrl && message.sender === 'bot' && state.loading">
+            <div class="typing-indicator">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </template>
+
+          <!-- Só mostra "mensagem vazia" se não for bot ou se não estiver carregando -->
+          <template v-if="!message.text && !message.audioUrl && !(message.sender === 'bot' && state.loading)">
             <em>⚠️ Mensagem vazia?</em>
           </template>
           <div class="timestamp">{{ formatTimestamp(message.timestamp) }}</div>
