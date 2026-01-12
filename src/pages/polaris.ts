@@ -112,6 +112,16 @@ export const actions = {
             await nextTick();
             textAreaRef.value?.focus();
 
+            // Cria mensagem do bot que será atualizada em tempo real
+            const botMessageIndex = state.messages.length;
+            const botMessage: iMensagem = {
+                id: botMessageIndex + 1,
+                text: '',
+                sender: 'bot',
+                timestamp: new Date(),
+            };
+            state.messages.push(botMessage);
+
             try {
                 state.streaming = true;
 

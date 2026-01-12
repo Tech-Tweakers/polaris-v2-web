@@ -18,10 +18,22 @@ declare global {
 }
 
 const renderMarkdown = (text: string = "") => {
+  if (!text || text.trim() === '') {
+    return '';
+  }
+
   const trimmed = text.trim();
   const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
 
-  return marked.parse(normalized);
+  try {
+    const html = marked.parse(normalized);
+    console.log('Markdown input:', trimmed);
+    console.log('Markdown output:', html);
+    return html;
+  } catch (error) {
+    console.error('Erro no parsing Markdown:', error);
+    return trimmed; // Fallback para texto simples
+  }
 };
 
 marked.use({
@@ -68,17 +80,35 @@ const scrollToBottom = () => {
     if (chatContainer.value) {
       chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
     }
-  }, 100);
+  }, 50); // Mais rápido para streaming
 };
 
+const scrollToBottomImmediate = () => {
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
+};
+
+// Watcher para novas mensagens
 watch(
   () => state.messages.length,
   async () => {
     await nextTick();
-    const lastMessage = state.messages[state.messages.length - 1];
-    //if (lastMessage?.sender === "bot") scrollToBottom();
-    scrollToBottom()
+    scrollToBottom();
   }
+);
+
+// Watcher para mudanças no texto das mensagens (streaming)
+watch(
+  () => state.messages.map(msg => msg.text),
+  async (newTexts, oldTexts) => {
+    // Só faz scroll se o texto realmente mudou e estamos carregando
+    if (state.loading) {
+      await nextTick();
+      scrollToBottomImmediate();
+    }
+  },
+  { deep: true }
 );
 
 const handleDynamicButton = () => {
