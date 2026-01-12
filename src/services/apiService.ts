@@ -21,7 +21,7 @@ let jwtToken: string | null = null;
 let tokenExpiry: number | null = null;
 
 // Função para obter token JWT
-async function getJWTToken(): Promise<string> {
+export async function getJWTToken(): Promise<string> {
     // Verifica se já tem um token válido
     if (jwtToken && tokenExpiry && Date.now() < tokenExpiry) {
         return jwtToken;
@@ -30,8 +30,16 @@ async function getJWTToken(): Promise<string> {
     try {
         console.log('🔄 Obtendo novo token JWT...');
         
-        // O endpoint espera parâmetros de query, não FormData
-        const response = await axios.post(`${config.API_BASE_URL}/auth/token?client_name=${CLIENT_NAME}&client_secret=${CLIENT_SECRET}`);
+        // O endpoint espera Form data
+        const formData = new FormData();
+        formData.append('client_name', CLIENT_NAME);
+        formData.append('client_secret', CLIENT_SECRET);
+
+        const response = await axios.post(`${config.API_BASE_URL}/auth/token`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
 
         jwtToken = response.data.access_token;
         // Token expira em 24 horas (86400000 ms)
