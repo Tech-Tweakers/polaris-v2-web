@@ -27,8 +27,6 @@ const renderMarkdown = (text: string = "") => {
 
   try {
     const html = marked.parse(normalized);
-    console.log('Markdown input:', trimmed);
-    console.log('Markdown output:', html);
     return html;
   } catch (error) {
     console.error('Erro no parsing Markdown:', error);
@@ -101,9 +99,8 @@ watch(
 // Watcher para mudanças no texto das mensagens (streaming)
 watch(
   () => state.messages.map(msg => msg.text),
-  async (newTexts, oldTexts) => {
-    // Só faz scroll se o texto realmente mudou e estamos carregando
-    if (state.loading) {
+  async () => {
+    if (state.loading || state.streaming) {
       await nextTick();
       scrollToBottomImmediate();
     }

@@ -112,27 +112,17 @@ export const actions = {
             await nextTick();
             textAreaRef.value?.focus();
 
-            // Cria mensagem do bot que será atualizada em tempo real
-            const botMessageIndex = state.messages.length;
-            const botMessage: iMensagem = {
-                id: botMessageIndex + 1,
-                text: '',
-                sender: 'bot',
-                timestamp: new Date(),
-            };
-            state.messages.push(botMessage);
-
             try {
                 state.streaming = true;
 
                 // Cria placeholder para a resposta do bot
-                const botMessage = {
+                state.messages.push({
                     id: state.messages.length + 1,
-                    text: "digitando...", // placeholder animável no UI
+                    text: "digitando...",
                     sender: "bot" as const,
                     timestamp: null as unknown as Date | null,
-                };
-                state.messages.push(botMessage);
+                });
+                const botIdx = state.messages.length - 1;
 
                 // Obter token e fazer streaming manual com fetch
                 const token = await getJWTToken();
@@ -146,7 +136,6 @@ export const actions = {
                         prompt: userText,
                         session_id: state.session_id,
                     }),
-                    // evita buffering agressivo em alguns proxies
                     cache: "no-store",
                 });
 
@@ -162,26 +151,29 @@ export const actions = {
                 const decoder = new TextDecoder();
                 let done = false;
                 let accumulated = "";
-                let firstChunk = true;
+                let sseBuffer = "";
 
                 while (!done) {
                     const { value, done: streamDone } = await reader.read();
                     if (value) {
-                        const chunk = decoder.decode(value, { stream: true });
-                        if (chunk) {
-                            console.debug("chunk recebido:", chunk);
+                        sseBuffer += decoder.decode(value, { stream: true });
+                        // Processa apenas linhas completas (terminadas em \n)
+                        const parts = sseBuffer.split("\n");
+                        sseBuffer = parts.pop() || ""; // última parte pode estar incompleta
+                        for (const line of parts) {
+                            if (!line.startsWith("data: ")) continue;
+                            const data = line.slice(6);
+                            if (data === "[START]" || data === "[DONE]") continue;
+                            accumulated += data;
                         }
-                        accumulated += chunk;
-                        if (firstChunk && chunk.trim().length > 0) {
-                            firstChunk = false;
-                        }
-                        botMessage.text = accumulated || (firstChunk ? "digitando..." : "...");
+                        // Atualiza via índice no array reativo para disparar reatividade
+                        state.messages[botIdx].text = accumulated || "digitando...";
                     }
                     done = streamDone;
                 }
 
-                botMessage.text = accumulated.trim() || "(resposta vazia)";
-        botMessage.timestamp = new Date(); // timestamp de término do streaming
+                state.messages[botIdx].text = accumulated.trim() || "(resposta vazia)";
+                state.messages[botIdx].timestamp = new Date();
             } catch (error) {
                 console.error('Error sending message:', error);
                 state.messages.push({
@@ -237,9 +229,7 @@ export const actions = {
                     {
                         headers: { "Content-Type": "multipart/form-data" },
                         timeout: 9999999,
-                        onDownloadProgress: () => {
-                        console.log("📥 Backend ainda respondendo...");
-                        }
+                        onDownloadProgress: () => {}
                     }
                     );
 
