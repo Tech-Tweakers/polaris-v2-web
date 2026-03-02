@@ -11,9 +11,9 @@ const router = createRouter({
       component: () => import('./pages/index.vue'),
     },
     {
-      path: '/polaris',
-      name: 'polaris',
-      component: () => import('./pages/polaris.ts'),
+      path: '/chat/:convId?',
+      name: 'chat',
+      component: () => import('./pages/index.vue'),
     },
 
     {

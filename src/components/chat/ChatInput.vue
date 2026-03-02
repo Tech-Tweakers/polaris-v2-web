@@ -1,0 +1,116 @@
+<script setup lang="ts">
+import { ref, nextTick } from 'vue';
+
+const props = defineProps<{
+  modelValue: string;
+  disabled?: boolean;
+  isRecording?: boolean;
+  loadingAudio?: boolean;
+  streaming?: boolean;
+  uploading?: boolean;
+}>();
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string];
+  send: [text: string];
+  fileUpload: [file: File];
+  toggleRecording: [];
+}>();
+
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const handleEnter = (event: KeyboardEvent) => {
+  if (event.shiftKey || event.metaKey) {
+    const target = event.target as HTMLInputElement;
+    const cursorPos = target.selectionStart ?? props.modelValue.length;
+    const newVal =
+      props.modelValue.slice(0, cursorPos) + '\n' + props.modelValue.slice(cursorPos);
+    emit('update:modelValue', newVal);
+    nextTick(() => {
+      target.selectionStart = target.selectionEnd = cursorPos + 1;
+    });
+  } else {
+    event.preventDefault();
+    if (props.modelValue.trim()) {
+      emit('send', props.modelValue.trim());
+    }
+  }
+};
+
+const handleDynamicButton = () => {
+  if (props.modelValue?.trim()) {
+    emit('send', props.modelValue.trim());
+  } else {
+    emit('toggleRecording');
+  }
+};
+
+const triggerFile = () => {
+  fileInput.value?.click();
+};
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) emit('fileUpload', file);
+  if (target) target.value = '';
+};
+</script>
+
+<template>
+  <div class="textArea pa-4 d-flex align-center">
+    <v-textarea
+      :model-value="modelValue"
+      @update:model-value="emit('update:modelValue', $event)"
+      label="Pergunte algo"
+      hide-details
+      class="flex-grow-1 mr-2"
+      auto-grow
+      rows="1"
+      :disabled="isRecording || loadingAudio || streaming || uploading"
+      :class="{ 'input-bloqueado': isRecording || loadingAudio || streaming || uploading }"
+      @keydown.enter="handleEnter"
+    />
+    <v-btn
+      class="ml-2 pulse-on-record"
+      :loading="loadingAudio"
+      :color="
+        modelValue?.trim()
+          ? 'blue darken-2'
+          : isRecording
+            ? 'red darken-2'
+            : 'teal darken-1'
+      "
+      icon
+      @click="handleDynamicButton"
+      :disabled="streaming || uploading"
+    >
+      <v-icon>
+        {{
+          modelValue?.trim()
+            ? 'mdi-send'
+            : isRecording
+              ? 'mdi-stop'
+              : 'mdi-microphone'
+        }}
+      </v-icon>
+    </v-btn>
+    <v-btn
+      class="ml-2 pulse-on-record"
+      :loading="uploading"
+      :disabled="streaming || loadingAudio || isRecording"
+      color="blue darken-2"
+      icon
+      @click="triggerFile"
+    >
+      <v-icon>mdi-paperclip</v-icon>
+    </v-btn>
+    <input
+      type="file"
+      ref="fileInput"
+      accept=".pdf"
+      style="display: none"
+      @change="handleFileChange"
+    />
+  </div>
+</template>
