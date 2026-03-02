@@ -270,13 +270,33 @@
   box-sizing: border-box;
   width: 100%;
 
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    background-color: #1a1a1a;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #333;
+
+    .code-lang {
+      font-size: 0.7rem;
+      color: #888;
+      text-transform: lowercase;
+    }
+  }
+
   pre {
     white-space: pre;
     font-size: 0.85rem;
     overflow-x: auto;
     background-color: #222;
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
     padding: 1rem;
+  }
+
+  &:not(:has(.code-block-header)) pre {
+    border-radius: 8px;
   }
 
   code {

@@ -28,6 +28,7 @@
     "buffer": "^6.0.3",
     "cpf-cnpj-validator": "^1.0.3",
     "dateformat": "^5.0.1",
+    "dexie": "^4.3.0",
     "format-duration": "^1.4.0",
     "google-translate-api": "^0.1.1",
     "highlight.js": "^11.11.1",
