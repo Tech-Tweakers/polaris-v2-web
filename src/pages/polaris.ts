@@ -164,7 +164,8 @@ export const actions = {
                             if (!line.startsWith("data: ")) continue;
                             const data = line.slice(6);
                             if (data === "[START]" || data === "[DONE]") continue;
-                            accumulated += data;
+                            // Decode escaped newlines from SSE
+                            accumulated += data.replace(/\\n/g, "\n");
                         }
                         // Atualiza via índice no array reativo para disparar reatividade
                         state.messages[botIdx].text = accumulated || "digitando...";

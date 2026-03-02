@@ -23,10 +23,9 @@ const renderMarkdown = (text: string = "") => {
   }
 
   const trimmed = text.trim();
-  const normalized = trimmed.replace(/([^\n])\n(?!\n)/g, "$1\n");
 
   try {
-    const html = marked.parse(normalized);
+    const html = marked.parse(trimmed);
     return html;
   } catch (error) {
     console.error('Erro no parsing Markdown:', error);

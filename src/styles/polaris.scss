@@ -356,12 +356,14 @@
 }
 
 .message-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: block;
   width: 100%;
   overflow-x: auto;
   word-break: break-word;
+
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
 }
 
 // Estilos globais para elementos Markdown dentro de mensagens
@@ -426,7 +428,8 @@
     }
   }
 
-  code {
+  // Inline code only (not inside code blocks)
+  :not(pre) > code {
     background-color: #333 !important;
     padding: 0.2em 0.4em !important;
     border-radius: 3px !important;
