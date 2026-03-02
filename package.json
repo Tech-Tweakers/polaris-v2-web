@@ -80,6 +80,7 @@
     "vue-cli-plugin-vuetify": "~2.5.1",
     "vue-tsc": "^0.2.2",
     "wait-on": "^7.2.0",
+    "workbox-core": "^6.5.3",
     "workbox-precaching": "^6.5.3"
   },
   "build": {
