@@ -30,7 +30,7 @@
     "dateformat": "^5.0.1",
     "dexie": "^4.3.0",
     "format-duration": "^1.4.0",
-    "google-translate-api": "^0.1.1",
+    "google-translate-api": "^2.3.0",
     "highlight.js": "^11.11.1",
     "jquery": "^3.6.4",
     "jsonp": "^0.2.1",
