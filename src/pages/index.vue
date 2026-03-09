@@ -64,7 +64,7 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
   <v-app>
     <ChatSidebar />
     <v-main class="main-layout">
-      <v-app-bar app flat height="42" class="app-bar">
+      <v-app-bar flat height="42" class="app-bar">
         <v-btn
           icon
           size="small"
