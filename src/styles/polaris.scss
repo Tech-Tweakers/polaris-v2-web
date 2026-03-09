@@ -28,7 +28,7 @@
 .main-layout {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100dvh;
   min-height: 0;
   background: linear-gradient(to bottom right, #1e1e1e, #111111);
   overflow: hidden;
@@ -186,7 +186,9 @@
   text-align: right !important;
 }
 
-.v-btn {
+.chat-shell .v-btn,
+.sidebar-drawer .v-btn,
+.app-bar .v-btn {
   border-radius: 50%;
   width: 48px;
   height: 48px;
@@ -205,7 +207,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 
-  .v-icon {
+.v-icon {
     font-size: 1.5rem;
   }
 }
