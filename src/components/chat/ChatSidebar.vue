@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useDisplay } from 'vuetify';
 import { chatState, chatActions, groupedConversations } from '../../composables/useChat';
 
 const renameDialog = ref(false);
@@ -8,6 +9,7 @@ const renameName = ref('');
 
 const deleteDialog = ref(false);
 const deleteTarget = ref<string | null>(null);
+const { mdAndDown } = useDisplay();
 
 const openRename = (conv: { id: string; name: string }) => {
   renameTarget.value = conv;
@@ -38,7 +40,9 @@ const confirmDelete = async () => {
 <template>
   <v-navigation-drawer
     v-model="chatState.sidebarOpen"
-    temporary
+    app
+    :temporary="mdAndDown"
+    :scrim="mdAndDown"
     width="280"
     class="sidebar-drawer"
   >
@@ -59,6 +63,7 @@ const confirmDelete = async () => {
         size="small"
         variant="text"
         @click="chatState.sidebarOpen = false"
+        v-if="mdAndDown"
       >
         <v-icon>mdi-close</v-icon>
       </v-btn>

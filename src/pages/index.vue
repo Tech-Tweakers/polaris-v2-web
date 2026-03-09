@@ -56,12 +56,14 @@ const isLastMessage = (msg: { id: number }) => {
   const msgs = chatState.visibleMessages;
   return msgs.length > 0 && msgs[msgs.length - 1].id === msg.id;
 };
+
+const hasMessages = () => chatState.visibleMessages.length > 0;
 </script>
 
 <template>
   <v-app>
     <ChatSidebar />
-    <v-main class="main-layout header">
+    <v-main class="main-layout">
       <v-app-bar app flat height="42" class="app-bar">
         <v-btn
           icon
@@ -87,26 +89,8 @@ const isLastMessage = (msg: { id: number }) => {
         </v-btn>
       </v-app-bar>
 
-      <!-- Empty state -->
-      <div
-        v-if="!chatState.currentConvId"
-        class="empty-state"
-      >
-        <img width="64" src="../assets/icon.png" alt="logo" style="opacity: 0.5" />
-        <p>Olá! Comece uma nova conversa.</p>
-        <v-btn
-          color="teal darken-1"
-          variant="tonal"
-          @click="chatActions.createNewChat()"
-        >
-          <v-icon start>mdi-plus</v-icon>
-          Nova conversa
-        </v-btn>
-      </div>
-
-      <!-- Chat area -->
-      <template v-else>
-        <div class="chat-container" ref="chatContainer">
+      <section class="chat-shell" :class="{ 'chat-shell--empty': !hasMessages() }">
+        <div v-if="hasMessages()" class="chat-container" ref="chatContainer">
           <ChatMessage
             v-for="message in chatState.visibleMessages"
             :key="message.id"
@@ -118,8 +102,14 @@ const isLastMessage = (msg: { id: number }) => {
             @switch-branch="chatActions.switchBranch($event)"
           />
         </div>
+        <div v-else class="empty-state">
+          <img width="56" src="../assets/icon.png" alt="logo" style="opacity: 0.55" />
+          <p class="empty-title">Como posso ajudar hoje?</p>
+          <p class="empty-subtitle">Envie uma pergunta para iniciar a conversa.</p>
+        </div>
 
         <ChatInput
+          class="chat-input"
           v-model="chatState.input"
           :disabled="chatState.streaming || chatState.uploading"
           :is-recording="chatState.isRecording"
@@ -130,20 +120,57 @@ const isLastMessage = (msg: { id: number }) => {
           @file-upload="chatActions.enviarArquivo($event)"
           @toggle-recording="chatActions.toggleRecording()"
         />
-      </template>
+      </section>
     </v-main>
   </v-app>
 </template>
 
 <style scoped>
-.empty-state {
+.chat-shell {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 56px 12px 12px;
+}
+
+.chat-shell--empty {
+  justify-content: center;
+  padding-bottom: 24vh;
+}
+
+.chat-input {
+  width: 100%;
+}
+
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: #888;
-  font-size: 1.1rem;
+  gap: 8px;
+  color: #9d9d9d;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.empty-title {
+  font-size: 1.4rem;
+  color: #e6e6e6;
+  margin-top: 8px;
+}
+
+.empty-subtitle {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+@media (max-width: 960px) {
+  .chat-shell {
+    padding: 56px 10px 10px;
+  }
+
+  .chat-shell--empty {
+    padding-bottom: 16vh;
+  }
 }
 </style>

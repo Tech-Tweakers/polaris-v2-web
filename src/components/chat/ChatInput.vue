@@ -58,13 +58,14 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-  <div class="textArea pa-4 d-flex align-center">
+  <div class="textArea chat-input-wrap">
     <v-textarea
       :model-value="modelValue"
       @update:model-value="emit('update:modelValue', $event)"
-      label="Pergunte algo"
+      placeholder="Pergunte algo"
+      variant="plain"
       hide-details
-      class="flex-grow-1 mr-2"
+      class="chat-textarea"
       auto-grow
       rows="1"
       :disabled="isRecording || loadingAudio || streaming || uploading"
@@ -72,7 +73,7 @@ const handleFileChange = (event: Event) => {
       @keydown.enter="handleEnter"
     />
     <v-btn
-      class="ml-2 pulse-on-record"
+      class="chat-action-btn pulse-on-record"
       :loading="loadingAudio"
       :color="
         modelValue?.trim()
@@ -96,7 +97,7 @@ const handleFileChange = (event: Event) => {
       </v-icon>
     </v-btn>
     <v-btn
-      class="ml-2 pulse-on-record"
+      class="chat-action-btn pulse-on-record"
       :loading="uploading"
       :disabled="streaming || loadingAudio || isRecording"
       color="blue darken-2"
@@ -114,3 +115,35 @@ const handleFileChange = (event: Event) => {
     />
   </div>
 </template>
+
+<style scoped>
+.chat-input-wrap {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  padding: 10px 12px;
+  border-radius: 22px;
+}
+
+.chat-textarea {
+  flex: 1;
+}
+
+.chat-textarea :deep(textarea) {
+  max-height: 180px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.chat-action-btn {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+}
+
+@media (max-width: 600px) {
+  .chat-input-wrap {
+    border-radius: 18px;
+    padding: 8px 10px;
+  }
+}
+</style>
