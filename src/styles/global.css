@@ -1,3 +1,12 @@
 .click {
     cursor: pointer;
 }
+
+.swal2-actions {
+    gap: 10px;
+}
+
+.swal2-actions .swal2-styled {
+    margin: 0 !important;
+    border-radius: 8px;
+}
