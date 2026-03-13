@@ -7,6 +7,13 @@
   overflow: hidden;
 }
 
+.v-application__wrap {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
 * {
   font-family: 'Inter', sans-serif;
 }
@@ -43,13 +50,15 @@
 }
 
 .main-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  min-height: 0;
+  flex: 1 1 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
   background: linear-gradient(to bottom right, #1e1e1e, #111111);
-  overflow: hidden;
+  overflow: hidden !important;
 }
+
 
 .header {
   padding: 2rem 1rem 1rem;
@@ -63,9 +72,12 @@
   padding: 1rem 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   gap: 0.7rem;
   min-height: 0;
+}
+
+.chat-container > :first-child {
+  margin-top: auto;
 }
 
 .message {
