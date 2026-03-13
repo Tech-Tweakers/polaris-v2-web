@@ -128,23 +128,11 @@ const handleFileChange = (event: Event) => {
   flex: 1;
 }
 
-.chat-textarea :deep(.v-field__input) {
-  padding-top: 0;
-  padding-bottom: 0;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  overflow: visible;
-}
-
-.chat-textarea :deep(.v-field) {
-  overflow: visible;
-}
-
 .chat-textarea :deep(textarea) {
   max-height: 180px;
   overflow-y: auto;
   line-height: 1.4;
+  padding-top: 10px;
 }
 
 .chat-textarea :deep(textarea::placeholder) {
