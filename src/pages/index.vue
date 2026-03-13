@@ -145,6 +145,7 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
 
 .chat-input {
   width: 100%;
+  flex-shrink: 0;
 }
 
 .empty-state {
