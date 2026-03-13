@@ -63,7 +63,7 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
 <template>
   <v-app>
     <ChatSidebar />
-    <v-main class="main-layout header">
+    <v-main class="main-layout">
       <v-app-bar app flat height="54" class="app-bar">
         <template #default>
           <div class="app-bar-content">
@@ -136,6 +136,7 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
   display: flex;
   flex-direction: column;
   padding: 56px 12px 12px;
+  overflow: hidden;
 }
 
 .chat-shell--empty {
