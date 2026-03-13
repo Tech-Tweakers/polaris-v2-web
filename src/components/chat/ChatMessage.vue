@@ -101,8 +101,12 @@ const handleBranchNext = () => {
         @keydown.escape="cancelEdit"
       />
       <div class="edit-actions">
-        <v-btn size="small" variant="text" @click="cancelEdit">Cancelar</v-btn>
-        <v-btn size="small" color="primary" variant="tonal" @click="submitEdit">Enviar</v-btn>
+        <v-btn icon size="x-small" variant="text" title="Cancelar" @click="cancelEdit">
+          <v-icon size="18" color="#aaa">mdi-close</v-icon>
+        </v-btn>
+        <v-btn icon size="x-small" variant="text" title="Enviar" @click="submitEdit">
+          <v-icon size="18" color="#aaa">mdi-send</v-icon>
+        </v-btn>
       </div>
     </template>
 
@@ -130,19 +134,19 @@ const handleBranchNext = () => {
         <em>⚠️ Mensagem vazia?</em>
       </template>
 
-      <!-- Timestamp -->
-      <div class="timestamp" v-if="message.timestamp && !isStreaming">
-        {{ formatTimestamp(message.timestamp) }}
+      <!-- Timestamp + Actions inline -->
+      <div class="message-footer" v-if="(message.timestamp && !isStreaming) || (hasContent && !isStreaming)">
+        <ChatMessageActions
+          v-if="hasContent && !isStreaming"
+          :role="message.role"
+          :content="message.content"
+          @regenerate="emit('regenerate', message.id)"
+          @edit="startEdit"
+        />
+        <div class="timestamp" v-if="message.timestamp && !isStreaming">
+          {{ formatTimestamp(message.timestamp) }}
+        </div>
       </div>
-
-      <!-- Actions (visible on hover) -->
-      <ChatMessageActions
-        v-if="hasContent && !isStreaming"
-        :role="message.role"
-        :content="message.content"
-        @regenerate="emit('regenerate', message.id)"
-        @edit="startEdit"
-      />
     </template>
   </div>
 </template>
@@ -154,8 +158,9 @@ const handleBranchNext = () => {
 }
 .edit-actions {
   display: flex;
-  gap: 8px;
   justify-content: flex-end;
+  gap: 4px;
+  margin-top: 6px;
 }
 .message:hover :deep(.message-actions) {
   opacity: 1;

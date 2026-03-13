@@ -71,8 +71,10 @@ const copyContent = async () => {
 .message-actions {
   display: flex;
   gap: 2px;
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity 0.2s;
-  margin-top: 4px;
+}
+.message-actions:hover {
+  opacity: 1;
 }
 </style>
