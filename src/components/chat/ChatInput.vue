@@ -24,7 +24,9 @@ const autoResize = () => {
   const el = textareaRef.value;
   if (!el) return;
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+  const newHeight = Math.min(el.scrollHeight, 180);
+  el.style.height = newHeight + 'px';
+  el.style.overflowY = el.scrollHeight > 180 ? 'auto' : 'hidden';
 };
 
 watch(() => props.modelValue, () => {
@@ -148,7 +150,7 @@ const handleFileChange = (event: Event) => {
   padding: 6px 0;
   min-height: 24px;
   max-height: 180px;
-  overflow: hidden;
+  overflow-y: hidden;
 }
 
 .chat-input-bar textarea::placeholder {
