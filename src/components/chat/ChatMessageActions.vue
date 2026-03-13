@@ -77,4 +77,11 @@ const copyContent = async () => {
 .message-actions:hover {
   opacity: 1;
 }
+.message-actions :deep(.v-btn) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.message-actions :deep(.v-btn:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 
 const props = defineProps<{
   modelValue: string;
@@ -17,20 +17,28 @@ const emit = defineEmits<{
   toggleRecording: [];
 }>();
 
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const handleEnter = (event: KeyboardEvent) => {
-  if (event.shiftKey || event.metaKey) {
-    const target = event.target as HTMLInputElement;
-    const cursorPos = target.selectionStart ?? props.modelValue.length;
-    const newVal =
-      props.modelValue.slice(0, cursorPos) + '\n' + props.modelValue.slice(cursorPos);
-    emit('update:modelValue', newVal);
-    nextTick(() => {
-      target.selectionStart = target.selectionEnd = cursorPos + 1;
-    });
-  } else {
-    event.preventDefault();
+const autoResize = () => {
+  const el = textareaRef.value;
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+};
+
+watch(() => props.modelValue, () => {
+  nextTick(autoResize);
+});
+
+const onInput = (e: Event) => {
+  const target = e.target as HTMLTextAreaElement;
+  emit('update:modelValue', target.value);
+};
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey) {
+    e.preventDefault();
     if (props.modelValue.trim()) {
       emit('send', props.modelValue.trim());
     }
@@ -58,54 +66,51 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-  <div class="textArea chat-input-wrap">
-    <v-textarea
-      :model-value="modelValue"
-      @update:model-value="emit('update:modelValue', $event)"
+  <div class="chat-input-bar">
+    <textarea
+      ref="textareaRef"
+      :value="modelValue"
+      @input="onInput"
+      @keydown="handleKeydown"
       placeholder="Pergunte algo"
-      variant="plain"
-      hide-details
-      class="chat-textarea"
-      auto-grow
       rows="1"
       :disabled="isRecording || loadingAudio || streaming || uploading"
-      :class="{ 'input-bloqueado': isRecording || loadingAudio || streaming || uploading }"
-      @keydown.enter="handleEnter"
+      :class="{ disabled: isRecording || loadingAudio || streaming || uploading }"
     />
-    <v-btn
-      class="chat-action-btn pulse-on-record"
-      :loading="loadingAudio"
-      :color="
-        modelValue?.trim()
-          ? 'blue darken-2'
-          : isRecording
-            ? 'red darken-2'
-            : 'teal darken-1'
-      "
-      icon
-      @click="handleDynamicButton"
-      :disabled="streaming || uploading"
-    >
-      <v-icon>
-        {{
-          modelValue?.trim()
-            ? 'mdi-send'
-            : isRecording
-              ? 'mdi-stop'
-              : 'mdi-microphone'
-        }}
-      </v-icon>
-    </v-btn>
-    <v-btn
-      class="chat-action-btn pulse-on-record"
-      :loading="uploading"
-      :disabled="streaming || loadingAudio || isRecording"
-      color="blue darken-2"
-      icon
-      @click="triggerFile"
-    >
-      <v-icon>mdi-paperclip</v-icon>
-    </v-btn>
+    <div class="chat-input-actions">
+      <v-btn
+        class="action-btn"
+        :loading="loadingAudio"
+        :color="isRecording ? 'red darken-2' : '#003f47'"
+        icon
+        size="small"
+        variant="flat"
+        @click="handleDynamicButton"
+        :disabled="streaming || uploading"
+      >
+        <v-icon size="20">
+          {{
+            modelValue?.trim()
+              ? 'mdi-send'
+              : isRecording
+                ? 'mdi-stop'
+                : 'mdi-microphone'
+          }}
+        </v-icon>
+      </v-btn>
+      <v-btn
+        class="action-btn"
+        :loading="uploading"
+        :disabled="streaming || loadingAudio || isRecording"
+        color="#003f47"
+        icon
+        size="small"
+        variant="flat"
+        @click="triggerFile"
+      >
+        <v-icon size="20">mdi-paperclip</v-icon>
+      </v-btn>
+    </div>
     <input
       type="file"
       ref="fileInput"
@@ -117,42 +122,59 @@ const handleFileChange = (event: Event) => {
 </template>
 
 <style scoped>
-.chat-input-wrap {
-  width: min(860px, 100%);
-  margin: 0 auto;
-  padding: 10px 12px;
-  border-radius: 22px;
-}
-
-.chat-textarea {
-  flex: 1;
-}
-
-.chat-textarea :deep(.v-field__input) {
-  padding-top: 8px;
-  min-height: 40px;
+.chat-input-bar {
   display: flex;
   align-items: center;
+  gap: 8px;
+  width: min(640px, calc(100% - 32px)) !important;
+  max-width: 640px !important;
+  margin: 0 auto !important;
+  padding: 10px 14px;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.chat-textarea :deep(textarea) {
+.chat-input-bar textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+  padding: 6px 0;
+  min-height: 24px;
   max-height: 180px;
-  overflow-y: auto;
-  line-height: 1.4;
+  overflow: hidden;
 }
 
-.chat-textarea :deep(textarea::placeholder) {
-  line-height: 1.4;
+.chat-input-bar textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
 }
 
-.chat-action-btn {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
+.chat-input-bar textarea.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.chat-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
 }
 
 @media (max-width: 600px) {
-  .chat-input-wrap {
+  .chat-input-bar {
     border-radius: 18px;
     padding: 8px 10px;
   }
