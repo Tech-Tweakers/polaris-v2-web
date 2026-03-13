@@ -62,29 +62,33 @@ const isLastMessage = (msg: { id: number }) => {
   <v-app>
     <ChatSidebar />
     <v-main class="main-layout header">
-      <v-app-bar app flat height="42" class="app-bar">
-        <v-btn
-          icon
-          size="small"
-          variant="text"
-          @click="chatState.sidebarOpen = !chatState.sidebarOpen"
-        >
-          <v-icon>mdi-menu</v-icon>
-        </v-btn>
-        <div class="titulo-barra">
-          <img width="30" class="logo" src="../assets/icon.png" alt="logo" />
-          <span class="titulo-texto">Polaris v2</span>
-        </div>
-        <v-spacer />
-        <v-btn
-          icon
-          size="small"
-          variant="text"
-          title="Nova conversa"
-          @click="chatActions.createNewChat()"
-        >
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+      <v-app-bar app flat height="54" class="app-bar">
+        <template #default>
+          <div class="app-bar-content">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              @click="chatState.sidebarOpen = !chatState.sidebarOpen"
+            >
+              <v-icon>mdi-menu</v-icon>
+            </v-btn>
+            <div class="titulo-barra">
+              <img width="34" class="logo" src="../assets/icon.png" alt="logo" />
+              <span class="titulo-texto">Polaris v2</span>
+            </div>
+            <v-spacer />
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              title="Nova conversa"
+              @click="chatActions.createNewChat()"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </div>
+        </template>
       </v-app-bar>
 
       <!-- Empty state -->

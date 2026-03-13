@@ -11,18 +11,34 @@
 }
 
 .v-app-bar {
-  height: 50px !important;
-  padding: 0 2rem;
+  height: 54px !important;
+  padding: 0 !important;
+}
+
+.app-bar-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;
+
+  .v-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .v-icon {
+    font-size: 1.4rem;
+  }
 }
 
 .titulo-barra {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 60%;
+  gap: 10px;
   font-size: 1.4rem;
-  margin-bottom: -8px;
   font-weight: 600;
+  margin-left: 6px;
 }
 
 .main-layout {
@@ -46,7 +62,9 @@
   padding-top: 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 0.7rem;
+  min-height: 0;
 }
 
 .message {
@@ -57,7 +75,7 @@
   align-items: flex-start;
   text-align: left;
   position: relative;
-  max-width: 80%;
+  max-width: 70%;
   word-break: break-word;
   overflow-wrap: break-word;
   box-sizing: border-box;
@@ -103,22 +121,22 @@
   background-color: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(2px);
   border: 0.5px solid rgba(255, 255, 255, 0.08);
-  padding: 1rem;
+  padding: 0.8rem 1.2rem;
   flex-shrink: 0;
   border-radius: 15px;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.5rem;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 900px;
+  margin: 0 auto 0.5rem;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: var(--font-message);
   color: #fff;
   font-family: 'Inter', sans-serif;
   resize: none;
-  min-height: 50px;
+  min-height: 54px;
 }
 
 .input-bloqueado input {
@@ -135,13 +153,19 @@
   border-radius: 8px;
 }
 
-.timestamp {
-  font-size: 0.6rem;
-  color: #aaa;
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
   margin-top: 4px;
-  text-align: right !important;
-  align-self: flex-end;
-  opacity: 0.4;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #aaa;
+  opacity: 0.6;
 }
 
 .typing-dots {
@@ -497,7 +521,7 @@
 }
 
 .message.bot-message {
-  max-width: 80%;
+  max-width: 70%;
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
