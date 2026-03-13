@@ -3,7 +3,7 @@ import config from '../ts/config';
 
 // Credenciais da API
 const CLIENT_NAME = 'web_client';
-const CLIENT_SECRET = import.meta.env.VITE_API_TOKEN || '';
+const CLIENT_SECRET = import.meta.env.VITE_API_TOKEN || config.API_TOKEN || '';
 
 // Configuração do axios para API
 const apiClient = axios.create({
@@ -26,7 +26,7 @@ export async function getJWTToken(): Promise<string> {
 
     try {
         if (!CLIENT_SECRET) {
-            throw new Error('VITE_API_TOKEN não configurado no frontend');
+            throw new Error('Token da API não configurado no frontend (VITE_API_TOKEN/API_TOKEN)');
         }
 
         // O endpoint espera parâmetros de query, não FormData
