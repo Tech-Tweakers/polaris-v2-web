@@ -67,28 +67,37 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
       <v-app-bar app flat height="54" class="app-bar">
         <template #default>
           <div class="app-bar-content">
-            <v-btn
-              icon
-              size="small"
-              variant="text"
-              @click="chatState.sidebarOpen = !chatState.sidebarOpen"
-            >
-              <v-icon>mdi-menu</v-icon>
-            </v-btn>
+            <v-tooltip text="Menu" location="bottom">
+              <template #activator="{ props: tip }">
+                <v-btn
+                  v-bind="tip"
+                  icon
+                  size="small"
+                  variant="text"
+                  @click="chatState.sidebarOpen = !chatState.sidebarOpen"
+                >
+                  <v-icon>mdi-menu</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
             <div class="titulo-barra">
               <img width="34" class="logo" src="../assets/icon.png" alt="logo" />
               <span class="titulo-texto">Polaris v2</span>
             </div>
             <v-spacer />
-            <v-btn
-              icon
-              size="small"
-              variant="text"
-              title="Nova conversa"
-              @click="chatActions.createNewChat()"
-            >
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <v-tooltip text="Nova conversa" location="bottom">
+              <template #activator="{ props: tip }">
+                <v-btn
+                  v-bind="tip"
+                  icon
+                  size="small"
+                  variant="text"
+                  @click="chatActions.createNewChat()"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
           </div>
         </template>
       </v-app-bar>
@@ -147,9 +156,9 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
 
 .chat-input {
   width: 100%;
-  max-width: 52rem;
+  max-width: 49.2rem;
   flex-shrink: 0;
-  padding: 0 1.5rem 0.75rem;
+  padding: 0 0 0.75rem;
 }
 
 .empty-state {

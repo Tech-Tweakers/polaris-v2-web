@@ -7,6 +7,16 @@
   overflow: hidden;
 }
 
+/* Tooltip global */
+.polaris-tooltip {
+  background-color: #2f2f2f !important;
+  color: #e0e0e0 !important;
+  font-size: 0.78rem !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
 /* Scrollbar global */
 ::-webkit-scrollbar {
   width: 6px;

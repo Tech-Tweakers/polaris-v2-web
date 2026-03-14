@@ -71,16 +71,20 @@ const handleFileChange = (event: Event) => {
   <div class="chat-input-bar">
     <v-menu location="top start" :close-on-content-click="true">
       <template #activator="{ props: menuProps }">
-        <v-btn
-          class="action-btn action-btn--left"
-          :disabled="streaming || loadingAudio || isRecording"
-          icon
-          size="small"
-          variant="text"
-          v-bind="menuProps"
-        >
-          <v-icon size="20">mdi-plus</v-icon>
-        </v-btn>
+        <v-tooltip text="Anexar" location="top">
+          <template #activator="{ props: tip }">
+            <v-btn
+              class="action-btn action-btn--left"
+              :disabled="streaming || loadingAudio || isRecording"
+              icon
+              size="small"
+              variant="text"
+              v-bind="{ ...menuProps, ...tip }"
+            >
+              <v-icon size="20">mdi-plus</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </template>
       <v-list density="compact" bg-color="#2f2f2f" rounded="lg" class="attach-menu">
         <v-list-item @click="triggerFile" prepend-icon="mdi-file-pdf-box" title="Enviar arquivo" />
@@ -97,30 +101,38 @@ const handleFileChange = (event: Event) => {
       :class="{ disabled: isRecording || loadingAudio || streaming || uploading }"
     />
     <div class="chat-input-actions">
-      <v-btn
-        v-if="!modelValue?.trim()"
-        class="action-btn"
-        :loading="loadingAudio"
-        :color="isRecording ? 'red darken-2' : 'transparent'"
-        icon
-        size="small"
-        variant="text"
-        @click="emit('toggleRecording')"
-        :disabled="streaming || uploading"
-      >
-        <v-icon size="20">{{ isRecording ? 'mdi-stop' : 'mdi-microphone' }}</v-icon>
-      </v-btn>
-      <v-btn
-        v-if="modelValue?.trim()"
-        class="action-btn action-btn--send"
-        icon
-        size="small"
-        variant="flat"
-        @click="emit('send', modelValue.trim())"
-        :disabled="streaming || uploading"
-      >
-        <v-icon size="18">mdi-arrow-up</v-icon>
-      </v-btn>
+      <v-tooltip v-if="!modelValue?.trim()" :text="isRecording ? 'Parar gravação' : 'Gravar áudio'" location="top">
+        <template #activator="{ props: tip }">
+          <v-btn
+            v-bind="tip"
+            class="action-btn"
+            :loading="loadingAudio"
+            :color="isRecording ? 'red darken-2' : 'transparent'"
+            icon
+            size="small"
+            variant="text"
+            @click="emit('toggleRecording')"
+            :disabled="streaming || uploading"
+          >
+            <v-icon size="20">{{ isRecording ? 'mdi-stop' : 'mdi-microphone' }}</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip v-if="modelValue?.trim()" text="Enviar mensagem" location="top">
+        <template #activator="{ props: tip }">
+          <v-btn
+            v-bind="tip"
+            class="action-btn action-btn--send"
+            icon
+            size="small"
+            variant="flat"
+            @click="emit('send', modelValue.trim())"
+            :disabled="streaming || uploading"
+          >
+            <v-icon size="18">mdi-arrow-up</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
     </div>
     <input
       type="file"

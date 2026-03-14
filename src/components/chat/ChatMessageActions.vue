@@ -33,37 +33,47 @@ const copyContent = async () => {
 
 <template>
   <div class="message-actions">
-    <v-btn
-      icon
-      size="x-small"
-      variant="text"
-      :title="copied ? 'Copiado!' : 'Copiar'"
-      @click="copyContent"
-    >
-      <v-icon size="16">{{ copied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
-    </v-btn>
+    <v-tooltip :text="copied ? 'Copiado!' : 'Copiar'" location="bottom">
+      <template #activator="{ props: tip }">
+        <v-btn
+          v-bind="tip"
+          icon
+          size="x-small"
+          variant="text"
+          @click="copyContent"
+        >
+          <v-icon size="16">{{ copied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
 
-    <v-btn
-      v-if="role === 'assistant'"
-      icon
-      size="x-small"
-      variant="text"
-      title="Regenerar"
-      @click="emit('regenerate')"
-    >
-      <v-icon size="16">mdi-refresh</v-icon>
-    </v-btn>
+    <v-tooltip v-if="role === 'assistant'" text="Regenerar" location="bottom">
+      <template #activator="{ props: tip }">
+        <v-btn
+          v-bind="tip"
+          icon
+          size="x-small"
+          variant="text"
+          @click="emit('regenerate')"
+        >
+          <v-icon size="16">mdi-refresh</v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
 
-    <v-btn
-      v-if="role === 'user'"
-      icon
-      size="x-small"
-      variant="text"
-      title="Editar"
-      @click="emit('edit')"
-    >
-      <v-icon size="16">mdi-pencil</v-icon>
-    </v-btn>
+    <v-tooltip v-if="role === 'user'" text="Editar" location="bottom">
+      <template #activator="{ props: tip }">
+        <v-btn
+          v-bind="tip"
+          icon
+          size="x-small"
+          variant="text"
+          @click="emit('edit')"
+        >
+          <v-icon size="16">mdi-pencil</v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
   </div>
 </template>
 
