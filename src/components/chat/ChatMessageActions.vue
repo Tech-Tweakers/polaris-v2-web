@@ -40,7 +40,7 @@ const copyContent = async () => {
       :title="copied ? 'Copiado!' : 'Copiar'"
       @click="copyContent"
     >
-      <v-icon size="14">{{ copied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
+      <v-icon size="16">{{ copied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
     </v-btn>
 
     <v-btn
@@ -51,7 +51,7 @@ const copyContent = async () => {
       title="Regenerar"
       @click="emit('regenerate')"
     >
-      <v-icon size="14">mdi-refresh</v-icon>
+      <v-icon size="16">mdi-refresh</v-icon>
     </v-btn>
 
     <v-btn
@@ -62,7 +62,7 @@ const copyContent = async () => {
       title="Editar"
       @click="emit('edit')"
     >
-      <v-icon size="14">mdi-pencil</v-icon>
+      <v-icon size="16">mdi-pencil</v-icon>
     </v-btn>
   </div>
 </template>
@@ -70,16 +70,17 @@ const copyContent = async () => {
 <style scoped>
 .message-actions {
   display: flex;
-  gap: 2px;
-  opacity: 0.4;
+  gap: 0;
+  opacity: 0.5;
   transition: opacity 0.2s;
-}
-.message-actions:hover {
-  opacity: 1;
 }
 .message-actions :deep(.v-btn) {
   background: transparent !important;
   box-shadow: none !important;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 6px !important;
 }
 .message-actions :deep(.v-btn:hover) {
   background: rgba(255, 255, 255, 0.1) !important;

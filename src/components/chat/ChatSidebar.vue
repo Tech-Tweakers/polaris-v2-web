@@ -97,11 +97,11 @@ const confirmDelete = async () => {
                   <v-icon size="16">mdi-dots-vertical</v-icon>
                 </v-btn>
               </template>
-              <v-list density="compact">
-                <v-list-item @click="openRename(conv)">
+              <v-list density="compact" bg-color="#2a2a2a" rounded="lg" class="context-menu">
+                <v-list-item @click="openRename(conv)" prepend-icon="mdi-pencil-outline">
                   <v-list-item-title>Renomear</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="openDelete(conv.id)" class="text-error">
+                <v-list-item @click="openDelete(conv.id)" prepend-icon="mdi-delete-outline" class="text-error">
                   <v-list-item-title>Excluir</v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -155,43 +155,95 @@ const confirmDelete = async () => {
 
 <style scoped>
 .sidebar-drawer {
-  background-color: #1a1a1a !important;
+  background-color: #171717 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 .sidebar-header {
   display: flex;
   align-items: center;
-  padding: 12px 12px 8px;
+  padding: 14px 12px 10px;
   gap: 8px;
 }
 .sidebar-title {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #f5f5f5;
+  color: #e0e0e0;
+  letter-spacing: 0.2px;
+}
+.sidebar-header :deep(.v-btn) {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #999 !important;
+}
+.sidebar-header :deep(.v-btn:hover) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
 }
 .sidebar-list {
   background: transparent !important;
+  padding: 0 !important;
 }
 .sidebar-group-title {
   font-size: 0.7rem !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #888 !important;
-  padding: 8px 16px 4px !important;
+  color: #666 !important;
+  padding: 16px 16px 6px !important;
+  min-height: unset !important;
 }
 .sidebar-item {
-  border-radius: 8px;
-  margin: 0 8px;
+  border-radius: 8px !important;
+  margin: 1px 8px !important;
+  padding: 0 8px !important;
+  min-height: 36px !important;
+  color: #b0b0b0 !important;
+  transition: background 0.15s !important;
+}
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #f0f0f0 !important;
+}
+.sidebar-item :deep(.v-list-item__append) {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sidebar-item:hover :deep(.v-list-item__append) {
+  opacity: 1;
+}
+.sidebar-item :deep(.v-list-item__append .v-btn) {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #999 !important;
+}
+.sidebar-item :deep(.v-list-item__append .v-btn:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 .sidebar-item-title {
-  font-size: 0.85rem;
+  font-size: 0.84rem !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 400;
+}
+.sidebar-item.v-list-item--active {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+.sidebar-item.v-list-item--active :deep(.v-list-item__append) {
+  opacity: 1;
 }
 .sidebar-empty {
   padding: 24px 16px;
   text-align: center;
-  color: #666;
-  font-size: 0.85rem;
+  color: #555;
+  font-size: 0.84rem;
 }
 </style>

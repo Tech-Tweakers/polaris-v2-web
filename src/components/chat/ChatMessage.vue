@@ -73,10 +73,10 @@ const handleBranchNext = () => {
 
 <template>
   <div
-    class="message"
+    class="message-wrapper"
     :class="{
-      'user-message': message.role === 'user',
-      'bot-message': message.role === 'assistant',
+      'message-wrapper--user': message.role === 'user',
+      'message-wrapper--bot': message.role === 'assistant',
     }"
   >
     <!-- Branch navigator -->
@@ -87,71 +87,91 @@ const handleBranchNext = () => {
       @next="handleBranchNext"
     />
 
-    <!-- Edit mode -->
-    <template v-if="isEditing">
-      <v-textarea
-        v-model="editText"
-        auto-grow
-        rows="2"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="edit-textarea"
-        @keydown.enter.exact.prevent="submitEdit"
-        @keydown.escape="cancelEdit"
-      />
-      <div class="edit-actions">
-        <v-btn icon size="x-small" variant="text" title="Cancelar" @click="cancelEdit">
-          <v-icon size="18" color="#aaa">mdi-close</v-icon>
-        </v-btn>
-        <v-btn icon size="x-small" variant="text" title="Enviar" @click="submitEdit">
-          <v-icon size="18" color="#aaa">mdi-send</v-icon>
-        </v-btn>
+    <!-- User message: bubble + footer outside -->
+    <template v-if="message.role === 'user'">
+      <div class="message user-message">
+        <template v-if="isEditing">
+          <v-textarea
+            v-model="editText"
+            auto-grow
+            rows="2"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="edit-textarea"
+            @keydown.enter.exact.prevent="submitEdit"
+            @keydown.escape="cancelEdit"
+          />
+          <div class="edit-actions">
+            <v-btn icon size="x-small" variant="text" title="Cancelar" @click="cancelEdit">
+              <v-icon size="18" color="#aaa">mdi-close</v-icon>
+            </v-btn>
+            <v-btn icon size="x-small" variant="text" title="Enviar" @click="submitEdit">
+              <v-icon size="18" color="#aaa">mdi-send</v-icon>
+            </v-btn>
+          </div>
+        </template>
+        <template v-else>
+          <template v-if="hasContent && !message.audioUrl">
+            <MarkdownRenderer :content="message.content" />
+          </template>
+          <template v-if="message.audioUrl">
+            <audio :src="message.audioUrl" controls class="audio-player" />
+          </template>
+        </template>
+      </div>
+      <!-- Footer OUTSIDE the bubble -->
+      <div class="message-footer message-footer--user" v-if="hasContent && !isStreaming && !isEditing">
+        <ChatMessageActions
+          :role="message.role"
+          :content="message.content"
+          @edit="startEdit"
+        />
       </div>
     </template>
 
-    <!-- Normal display -->
+    <!-- Bot message: no bubble, content directly -->
     <template v-else>
-      <!-- Text content -->
-      <template v-if="hasContent && !message.audioUrl">
-        <MarkdownRenderer :content="message.content" />
-      </template>
-
-      <!-- Audio -->
-      <template v-if="message.audioUrl">
-        <audio :src="message.audioUrl" controls class="audio-player" />
-      </template>
-
-      <!-- Typing indicator -->
-      <template v-if="isTyping">
-        <span class="typing-dots">
-          <span>.</span><span>.</span><span>.</span>
-        </span>
-      </template>
-
-      <!-- Empty fallback -->
-      <template v-if="!message.content && !message.audioUrl && !isTyping">
-        <em>⚠️ Mensagem vazia?</em>
-      </template>
-
-      <!-- Timestamp + Actions inline -->
-      <div class="message-footer" v-if="(message.timestamp && !isStreaming) || (hasContent && !isStreaming)">
+      <div class="message bot-message">
+        <template v-if="hasContent && !message.audioUrl">
+          <MarkdownRenderer :content="message.content" />
+        </template>
+        <template v-if="message.audioUrl">
+          <audio :src="message.audioUrl" controls class="audio-player" />
+        </template>
+        <template v-if="isTyping">
+          <span class="typing-dots">
+            <span>.</span><span>.</span><span>.</span>
+          </span>
+        </template>
+        <template v-if="!message.content && !message.audioUrl && !isTyping">
+          <em>Mensagem vazia</em>
+        </template>
+      </div>
+      <!-- Footer below bot message -->
+      <div class="message-footer message-footer--bot" v-if="hasContent && !isStreaming">
         <ChatMessageActions
-          v-if="hasContent && !isStreaming"
           :role="message.role"
           :content="message.content"
           @regenerate="emit('regenerate', message.id)"
-          @edit="startEdit"
         />
-        <div class="timestamp" v-if="message.timestamp && !isStreaming">
-          {{ formatTimestamp(message.timestamp) }}
-        </div>
       </div>
     </template>
   </div>
 </template>
 
 <style scoped>
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.message-wrapper--user {
+  align-items: flex-end;
+}
+.message-wrapper--bot {
+  align-items: flex-start;
+}
 .edit-textarea {
   width: 100%;
   margin-bottom: 4px;
@@ -162,7 +182,17 @@ const handleBranchNext = () => {
   gap: 4px;
   margin-top: 6px;
 }
-.message:hover :deep(.message-actions) {
-  opacity: 1;
+.message-footer--user {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+.message-footer--bot {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: -0.25rem;
+}
+.message-wrapper:hover :deep(.message-actions) {
+  opacity: 0.8;
 }
 </style>
