@@ -1,0 +1,1 @@
+import{_ as o,e as n,w as s,f as r,a,g as c}from"./index-Be4Ribx2.js";const _={};function f(l,e){const t=r("H1");return a(),n(t,null,{default:s(()=>[...e[0]||(e[0]=[c("rota teste",-1)])]),_:1})}const p=o(_,[["render",f]]);export{p as default};
