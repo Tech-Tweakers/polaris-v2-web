@@ -135,7 +135,8 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 56px 12px 12px;
+  align-items: center;
+  padding: 56px 1rem 12px;
   overflow: hidden;
 }
 
@@ -146,7 +147,9 @@ const hasMessages = () => chatState.visibleMessages.length > 0;
 
 .chat-input {
   width: 100%;
+  max-width: 52rem;
   flex-shrink: 0;
+  padding: 0 1.5rem 0.75rem;
 }
 
 .empty-state {
