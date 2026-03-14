@@ -95,7 +95,7 @@ const handleBranchNext = () => {
             v-model="editText"
             auto-grow
             rows="2"
-            variant="outlined"
+            variant="plain"
             density="compact"
             hide-details
             class="edit-textarea"
@@ -103,12 +103,20 @@ const handleBranchNext = () => {
             @keydown.escape="cancelEdit"
           />
           <div class="edit-actions">
-            <v-btn icon size="x-small" variant="text" title="Cancelar" @click="cancelEdit">
-              <v-icon size="18" color="#aaa">mdi-close</v-icon>
-            </v-btn>
-            <v-btn icon size="x-small" variant="text" title="Enviar" @click="submitEdit">
-              <v-icon size="18" color="#aaa">mdi-send</v-icon>
-            </v-btn>
+            <v-tooltip text="Cancelar" location="bottom">
+              <template #activator="{ props: tip }">
+                <v-btn v-bind="tip" class="edit-btn" icon size="x-small" variant="text" @click="cancelEdit">
+                  <v-icon size="16">mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip text="Enviar" location="bottom">
+              <template #activator="{ props: tip }">
+                <v-btn v-bind="tip" class="edit-btn edit-btn--send" icon size="x-small" variant="flat" @click="submitEdit">
+                  <v-icon size="16">mdi-arrow-up</v-icon>
+                </v-btn>
+              </template>
+            </v-tooltip>
           </div>
         </template>
         <template v-else>
@@ -179,8 +187,28 @@ const handleBranchNext = () => {
 .edit-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 4px;
-  margin-top: 6px;
+  gap: 0;
+  margin-top: 4px;
+}
+.edit-btn {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #b0b0b0 !important;
+}
+.edit-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+.edit-btn--send {
+  background-color: #fff !important;
+  color: #212121 !important;
+}
+.edit-btn--send:hover {
+  background-color: #e0e0e0 !important;
 }
 .message-footer--user {
   display: flex;
