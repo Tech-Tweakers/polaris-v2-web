@@ -35,6 +35,9 @@ const defaultConfig = {
     color: 'cyan-lighten-1',
     clearable: true,
     clearIcon: "mdi-close-circle",
+  },
+  VTooltip: {
+    contentClass: 'polaris-tooltip',
   }
 }
 
