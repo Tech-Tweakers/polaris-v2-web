@@ -387,6 +387,11 @@
     opacity: 1 !important;
     pointer-events: auto !important;
   }
+
+  .polaris-tooltip,
+  .v-tooltip > .v-overlay__content {
+    display: none !important;
+  }
 }
 
 .message-content {
